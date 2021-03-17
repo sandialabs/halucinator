@@ -111,10 +111,28 @@ def start(rx_port=5555, tx_port=5556, qemu=None):
     #__process = Process(target=run_server).start()
 
 
-def trigger_interrupt(num):
+# def trigger_interrupt(num):
+#     global __qemu
+#     log.info("Sending Interrupt: %s" % num)
+#     __qemu.trigger_interrupt(num)
+
+
+def irq_set_qmp(irq_num=1):
     global __qemu
-    log.info("Sending Interrupt: %s" % num)
-    __qemu.trigger_interrupt(num)
+    __qemu.irq_set_qmp(irq_num)
+
+def irq_clear_qmp(irq_num=1):
+    global __qemu
+    __qemu.irq_clear_qmp(irq_num)
+
+
+def irq_set_bp(irq_num=1):
+    global __qemu
+    __qemu.irq_set_bp(irq_num)
+
+def irq_clear_bp(irq_num):
+    global __qemu
+    __qemu.irq_clear_bp(irq_num)
 
 
 def irq_set(irq_num=1, cpu=0):
@@ -147,7 +165,7 @@ def run_server():
             string = __rx_socket__.recv_string()
             topic, msg = decode_zmq_msg(string)
             log.info("Got message: Topic %s  Msg: %s" % (str(topic), str(msg)))
-
+            print("Got message: Topic %s  Msg: %s" % (str(topic), str(msg)))
             if topic.startswith("Peripheral"):
                 if topic in __rx_handlers__:
                     method_cls, method = __rx_handlers__[topic]
@@ -158,7 +176,7 @@ def run_server():
 
             elif topic.startswith("Interrupt.Trigger"):
                 log.info("Triggering Interrupt %s" % msg['num'])
-                trigger_interrupt(msg['num'])
+                irq_set_qmp(msg['num'])
             elif topic.startswith("Interrupt.Base"):
                 log.info("Setting Vector Base Addr %s" % msg['num'])
                 __qemu.set_vector_table_base(msg['base'])

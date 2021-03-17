@@ -1,0 +1,23 @@
+architecture: ARMEL
+base_address: 0
+entry_point: 0
+symbols:
+  32768: _init
+  32792: deregister_tm_clones
+  32840: register_tm_clones
+  32896: __do_global_dtors_aux
+  32964: frame_dummy
+  33316: run_test
+  33336: write_int
+  33368: test_end
+  33396: four_parameters
+  33472: five_parameters
+  33556: ten_parameters
+  33680: main
+  33712: exit
+  33732: atexit
+  33764: __libc_fini_array
+  33836: __libc_init_array
+  33964: memset
+  34208: __register_exitproc
+  34432: _fini

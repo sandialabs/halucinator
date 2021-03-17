@@ -19,7 +19,7 @@ class TimerModel(object):
     active_timers = {}
     @classmethod
     def start_timer(cls, name, isr_num, rate):
-        log.info("Starting timer: %s" % name)
+        log.debug("Starting timer: %s" % name)
         if name not in cls.active_timers:
             stop_event = Event()
             t = TimerIRQ(stop_event, name, isr_num, rate)
@@ -54,6 +54,5 @@ class TimerIRQ(Thread):
     def run(self):
         while not self.stopped.wait(self.rate):
             log.info("Sending IRQ: %s" % self.irq_num)
-            Interrupts.set_active(self.name)
-            Interrupts.trigger_interrupt(self.irq_num)
+            Interrupts.set_active_qmp(self.irq_num)
             # call a function

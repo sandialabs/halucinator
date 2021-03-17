@@ -126,6 +126,7 @@ def register_bp_handler(qemu, intercept):
                                             intercept.function)
     except ValueError as e:
         hal_log.error("Invalid BP registration failed for %s" %(intercept))
+        hal_log.error(e)
         hal_log.error("Input registration args are %s" %(intercept.registration_args))
         exit(-1)
 

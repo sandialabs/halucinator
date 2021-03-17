@@ -100,7 +100,7 @@ class ARMFunctionCaller(FunctionCaller):
 
 class FunctionCallerIntercept():
 
-    MEMORY_REGION_NAME = "halucinator_caller"
+    MEMORY_REGION_NAME = "halucinator"
 
     def __init__(self):
         
@@ -169,7 +169,6 @@ class FunctionCallerIntercept():
             callee_fname = hex(callee)
             callee_addr = callee
 
-        
         if self.qemu.avatar.arch == avatar2.archs.arm.ARM:
             stack_addr = self.get_stack_addr(stack_size)
             caller = ARMFunctionCaller(self.qemu, stack_addr, stack_size,
@@ -187,8 +186,6 @@ class FunctionCallerIntercept():
                 self.setup_return_bp(function, callee_addr, return_addr)
             else:
                 self.setup_return_bp(function, callee_addr, return_addr,break_type="WP",rw=watchpoint)
-
-
         return FunctionCallerIntercept.initiate_call_handler
 
     def get_stack_addr(self, size):
@@ -201,7 +198,6 @@ class FunctionCallerIntercept():
         raise(ValueError("Insufficient Memory for stacks " +\
                           "increase size of %s memory regions" % 
                           FunctionCallerIntercept.MEMORY_REGION_NAME))
-            
 
     def setup_return_bp(self, function, callee_addr, return_addr, break_type="BP",rw="r"):
         if break_type == "WP":
@@ -246,5 +242,3 @@ class FunctionCallerIntercept():
         caller.restore_state()
 
         return False, None
-
-    

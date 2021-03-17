@@ -1,0 +1,13 @@
+intercepts:
+
+  - class: halucinator.bp_handlers.test.large_parameter_call_test.large_parameters_call.ParameterTest
+    function: run_test
+    symbol: run_test
+
+  - class: halucinator.bp_handlers.test.large_parameter_call_test.large_parameters_call.ParameterTest
+    function: write_int
+    symbol: write_int
+
+  - class: halucinator.bp_handlers.test.large_parameter_call_test.large_parameters_call.ParameterTest
+    function: exit
+    symbol: exit

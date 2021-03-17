@@ -11,7 +11,9 @@ hal_log = hal_log_conf.getHalLogger()
 
 
 class HalMemConfig(object):
-    def __init__(self, name, config_filename, base_addr, size, permissions='rwx', file=None, emulate=None):
+    def __init__(self, name, config_filename, base_addr, size, 
+                 permissions='rwx', file=None, emulate=None, 
+                 qemu_name=None):
         '''
             Reads in config
         '''
@@ -23,6 +25,7 @@ class HalMemConfig(object):
         self.emulate = emulate
         self.emulate_required = False
         self.base_addr = base_addr
+        self.qemu_name = qemu_name
 
         if self.file != None:
             self.get_full_path()
@@ -132,7 +135,7 @@ class HalInterceptConfig(object):
         return valid
 
     def __repr__(self):
-        if self.bp_addr is None:
+        if type(self.bp_addr) != int:
             return ("(%s){symbol: %s, addr: None, class: %s, function:%s}" % \
                 (self.config_file, self.symbol, self.cls, self.function))
         else:
@@ -229,6 +232,9 @@ class HalucinatorConfig(object):
         '''
             Parsers memory config from yaml file.
         '''
+        if not hasattr(mem_dict, 'items'):
+            return
+
         for mem_name, mem_conf in mem_dict.items():
             mem = HalMemConfig(mem_name, yaml_filename, **mem_conf)
             mem.emulate_required = emulate_required
@@ -296,7 +302,7 @@ class HalucinatorConfig(object):
         for sym in self.symbols:
             if addr >= sym.addr and addr <= (sym.addr + sym.size):
                 return sym.name
-        return None
+        return hex(addr)
 
     def memory_containing(self, addr):
         '''
@@ -331,23 +337,18 @@ class HalucinatorConfig(object):
         bp_addrs = {}
         del_inters = []
         for inter in self.intercepts:
-            # Fix up break point addresses for cortex-m3
-            if self.machine.arch == 'cortex-m3' and inter.watchpoint == False and inter.bp_addr is not None:
-                inter.bp_addr &= 0xFFFFFFFE  # Clear thumb bit so BP is on right address
-
-            if inter.is_valid():
-                # Check for duplicates
-                if inter.bp_addr in bp_addrs:
-                    hal_log.warning("Duplicate Intercept:\n\tOld: %s\n\tNew: %s" % (bp_addrs[inter.bp_addr], inter))
-                    del_inters.append(bp_addrs[inter.bp_addr])
-                    
-                bp_addrs[inter.bp_addr] = inter
-            else:
+            if not inter.is_valid():
                 hal_log.error("Config: %s" % mem)
                 valid = False
-            
+                if inter.bp_addr in bp_addrs:
+                    hal_log.warning("Duplicate Intercept:\n\tOld: %s\n\tNew: %s" % \
+                        (bp_addrs[inter.bp_addr][1], inter))
+                    del_inters = bp_addrs[inter.bp_addr]
+                bp_addrs[inter.bp_addr] = inter
+            else:
+                if self.machine.arch == 'cortex-m3' and inter.watchpoint == False and inter.bp_addr is not None:
+                    inter.bp_addr &= 0xFFFFFFFE  # Clear thumb bit so BP is on right address
 
-        # Remove duplicate intercepts
         for inter in del_inters:
             self.intercepts.remove(inter)
 
