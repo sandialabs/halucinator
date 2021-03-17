@@ -29,7 +29,7 @@ def rx_from_emulator(emu_rx_port, interface):
     context = zmq.Context()
     mq_socket = context.socket(zmq.SUB)
     mq_socket.connect("tcp://localhost:%s" % emu_rx_port)
-    mq_socket.setsockopt(zmq.SUBSCRIBE, topic)
+    mq_socket.setsockopt(zmq.SUBSCRIBE, topic.encode('utf-8'))
 
     while (__run_server):
         msg = mq_socket.recv_string()

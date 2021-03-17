@@ -1,96 +1,50 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
-# certain rights in this software.
-
-from os import sys, path
-import zmq
-from multiprocessing import Process
-import os
-import time
-from ..peripheral_models.peripheral_server import encode_zmq_msg, decode_zmq_msg
 from threading import Thread, Event
-import binascii
 import logging
+import time
+import socket
+import scapy.all as scapy
+import os
+
 log = logging.getLogger(__name__)
 
-
-class IOServer(Thread):
-
-    def __init__(self, rx_port=5556, tx_port=5555, log_file=None):
+class HostEthernetServer(Thread):
+    def __init__(self, interface, enable_rx=False):
         Thread.__init__(self)
-        self.rx_port = rx_port
-        self.tx_port = tx_port
+        self.interface = interface
         self.__stop = Event()
-        self.context = zmq.Context()
-        self.rx_socket = self.context.socket(zmq.SUB)
-        self.rx_socket.connect("tcp://localhost:%s" % self.rx_port)
-        self.tx_socket = self.context.socket(zmq.PUB)
-        self.tx_socket.bind("tcp://*:%s" % self.tx_port)
-        self.handlers = {}
-        self.packet_log = None
-        if log_file is not None:
-            self.packet_log = open(log_file, 'wt')
-            self.packet_log.write("Direction, Time, Topic, Data\n")
+        self.enable_rx = enable_rx
+
+        os.system('ip link set %s promisc on' %
+                  interface)  # Set to permisucous
+        ETH_P_ALL = 3
+        self.host_socket = socket.socket(
+            socket.AF_PACKET, socket.SOCK_RAW, socket.htons(ETH_P_ALL))
+        self.host_socket.bind((interface, 0))
+        self.host_socket.settimeout(1.0)
+        self.handler = None
 
     def register_topic(self, topic, method):
-        log.debug("Registering RX_Port: %s, Topic: %s" % (self.rx_port, topic))
-        self.rx_socket.setsockopt(zmq.SUBSCRIBE, topic)
-        self.handlers[topic] = method
+        log.debug("Registering Host Ethernet Receiver Topic: %s" % topic)
+        # self.rx_socket.setsockopt(zmq.SUBSCRIBE, topic)
+        self.handler = method
 
     def run(self):
-        while not self.__stop.is_set():
-            msg = self.rx_socket.recv_string()
-            log.debug("Received: %s" % str(msg))
-            topic, data = decode_zmq_msg(msg)
-            if self.packet_log:
-                self.packet_log.write("Sent, %i, %s, %s\n" % (
-                    time.time(), topic, binascii.hexlify(data['frame'])))
-                self.packet_log.flush()
-            method = self.handlers[topic]
+        while self.enable_rx and not self.__stop.is_set():
+            try:
+                frame = self.host_socket.recv(2048)
+                data = {'interface_id': msg_id, 'frame': frame}
+                msg = encode_zmq_msg(topic, data)
+                self.handler(self, data)
+            except socket.timeout:
+                pass
 
-            method(self, data)
+        log.debug("Shutting Down Host Ethernet RX")
+
+    def send_msg(self, topic, msg):
+        frame = msg['frame']
+        p = scapy.Raw(frame)
+        scapy.sendp(p, iface=self.interface)
 
     def shutdown(self):
+        log.debug("Stopping Host Ethernet Server")
         self.__stop.set()
-        if self.packet_log:
-            self.packet_log.close()
-
-    def send_msg(self, topic, data):
-        msg = encode_zmq_msg(topic, data)
-        self.tx_socket.send_string(msg)
-        if self.packet_log:
-            # TODO, make logging more generic so will work for non-frames
-            if 'frame' in data:
-
-                self.packet_log.write("Received, %i, %s, %s\n" % (
-                    time.time(), topic, binascii.hexlify(data['frame'])))
-                self.packet_log.flush()
-
-
-
-def main():
-    from argparse import ArgumentParser
-    p = ArgumentParser()
-    p.add_argument('-r', '--rx_port', default=5556,
-                   help='Port number to receive zmq messages for IO on')
-    p.add_argument('-t', '--tx_port', default=5555,
-                   help='Port number to send IO messages via zmq')
-    args = p.parse_args()
-
-    io_server = IOServer(args.rx_port, args.tx_port)
-    io_server.start()
-
-    try:
-        while(1):
-            topic = input("Topic:")
-            msg_id = input("ID:")
-            data = input("Data:")
-
-            d = {'id': msg_id, 'data': data}
-            io_server.send_msg(topic, d)
-    except KeyboardInterrupt:
-        io_server.shutdown()
-        # io_server.join()
-
-if __name__ == '__main__':
-    main()

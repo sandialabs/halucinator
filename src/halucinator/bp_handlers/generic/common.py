@@ -1,5 +1,5 @@
 from ..bp_handler import BPHandler, bp_handler
-import logging
+import logging, sys
 from ... import hal_log
 
 log = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ class ReturnConstant(BPHandler):
     @bp_handler
     def return_constant(self, qemu, addr):
         '''
-            Intercept Execution and return constant
+            Intercept Execution and return 0
         '''
         if not self.silent[addr]:
             hal_log.info("ReturnConstant: %s : %#x" %(self.func_names[addr], self.ret_values[addr]))
@@ -92,3 +92,34 @@ class SkipFunc(BPHandler):
         if not self.silent[addr]:
             hal_log.info("SkipFunc: %s " %(self.func_names[addr]))
         return True, None
+
+class KillExit(BPHandler):
+    '''
+        Break point handler that stops emulation and kills avatar/halucinator
+
+        Halucinator configuration usage:
+        - class: halucinator.bp_handlers.KillExit
+          function: <func_name> (Can be anything)
+          addr: <addr>
+    '''
+    def __init__(self, filename=None):
+        self.silent = {}
+        self.func_names = {}
+
+    def register_handler(self, qemu, addr, func_name, silent=False):
+        self.silent[addr] = silent
+        self.func_names[addr] = func_name
+        return KillExit.kill_and_exit
+
+    @bp_handler
+    def kill_and_exit(self, qemu, addr):
+        '''
+            Just return
+        '''
+        if not self.silent[addr]:
+            hal_log.info("Killing: %s " %(self.func_names[addr]))
+        
+        avatar = qemu.avatar
+        avatar.stop()
+        avatar.shutdown()
+        sys.exit(0)

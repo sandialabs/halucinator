@@ -121,7 +121,8 @@ def find_qemu():
     exit(1)
 
 
-def get_qemu_target(name, config, firmware=None, log_basic_blocks=False, gdb_port=1234):
+def get_qemu_target(name, config, firmware=None, \
+        log_basic_blocks=False, gdb_port=1234, singlestep=False):
     qemu_path = find_qemu()
     outdir = os.path.join('tmp', name)
     hal_stats.set_filename(outdir+"/stats.yaml")
@@ -130,6 +131,7 @@ def get_qemu_target(name, config, firmware=None, log_basic_blocks=False, gdb_por
     arch = ARCH_LUT[config.machine.arch]
     
     avatar = Avatar(arch=arch, output_directory=outdir)
+    avatar.config = config
     log.info("GDB_PORT: %s"% gdb_port)
     log.info("QEMU Path: %s" % qemu_path)
 
@@ -141,13 +143,18 @@ def get_qemu_target(name, config, firmware=None, log_basic_blocks=False, gdb_por
                              qmp_port=gdb_port+1,
                              firmware=firmware,
                              executable=qemu_path,
-                             entry_address=config.machine.entry_addr, name=name)
+                             entry_address=config.machine.entry_addr, 
+                             name=name
+                            )
 
     if log_basic_blocks == 'irq':
         qemu.additional_args = ['-d', 'in_asm,exec,int,cpu,guest_errors,avatar,trace:nvic*', '-D',
                                 os.path.join(outdir, 'qemu_asm.log')]
     elif log_basic_blocks == 'regs':
         qemu.additional_args = ['-d', 'in_asm,exec,cpu', '-D',
+                                os.path.join(outdir, 'qemu_asm.log')]
+    elif log_basic_blocks == 'regs-nochain':
+        qemu.additional_args = ['-d', 'in_asm,exec,cpu,nochain', '-D',
                                 os.path.join(outdir, 'qemu_asm.log')]
     elif log_basic_blocks == 'exec':
         qemu.additional_args = ['-d', 'exec', '-D',
@@ -158,10 +165,13 @@ def get_qemu_target(name, config, firmware=None, log_basic_blocks=False, gdb_por
     elif log_basic_blocks == 'trace':
         qemu.additional_args = ['-d', 'in_asm,exec', '-D',
                                 os.path.join(outdir, 'qemu_asm.log')]
-
     elif log_basic_blocks:
         qemu.additional_args = ['-d', 'in_asm', '-D',
                                 os.path.join(outdir, 'qemu_asm.log')]
+    
+    if singlestep:
+        qemu.additional_args.append('-singlestep')
+
     return avatar, qemu
 
 
@@ -181,7 +191,8 @@ def setup_memory(avatar, memory, record_memories=None):
              (memory.name, memory.base_addr, memory.size))
     avatar.add_memory_range(memory.base_addr, memory.size,
                             name=memory.name, file=memory.file,
-                            permissions=memory.permissions, emulate=emulate)
+                            permissions=memory.permissions, emulate=emulate,
+                            qemu_name=memory.qemu_name)
 
     if record_memories is not None:
         if 'w' in memory.permissions:
@@ -189,7 +200,8 @@ def setup_memory(avatar, memory, record_memories=None):
 
 
 def emulate_binary(config, target_name=None, log_basic_blocks=None,
-                   rx_port=5555, tx_port=5556, gdb_port=1234, elf_file=None, db_name=None):
+                   rx_port=5555, tx_port=5556, gdb_port=1234, 
+                   elf_file=None, db_name=None, singlestep=False):
 
     # Bug in QEMU about init stack pointer/entry point this works around
     if config.machine.arch == 'cortex-m3':
@@ -202,7 +214,7 @@ def emulate_binary(config, target_name=None, log_basic_blocks=None,
 
     avatar, qemu = get_qemu_target(target_name, config,
                                    log_basic_blocks=log_basic_blocks,
-                                   gdb_port=gdb_port)
+                                   gdb_port=gdb_port, singlestep=singlestep)
 
     if 'remove_bitband' in config.options and config.options['remove_bitband']:
         log.info("Removing Bitband")
@@ -239,16 +251,8 @@ def emulate_binary(config, target_name=None, log_basic_blocks=None,
    # Setup Intecepts
     avatar.watchmen.add_watchman('BreakpointHit', 'before',
                                  intercepts.interceptor, is_async=True)
-    # Avatar may not support WatchPoints
-    try:
-        avatar.watchmen.add_watchman('WatchpointHit', 'before',
+    avatar.watchmen.add_watchman('WatchpointHit', 'before',
                                  intercepts.interceptor, is_async=True)
-    except Exception as e:  #Avatar should really raise some specific types
-        if e.args[0] == 'Requested event_type does not exist':
-            log.warning("Watchpoints not supported")
-        else:
-            raise e
-
     qemu.gdb_port = gdb_port
     avatar.config = config
     log.info("Initializing Avatar Targets")
@@ -301,13 +305,15 @@ def main():
     p = ArgumentParser()
     p.add_argument('-c', '--config', action='append', required=True,
                    help='Config file(s) used to run emulation files are '\
-                   'appended to each other with later files taking precidence')
+                   'appended to each other with later files taking precedence')
     # p.add_argument('-m', '--memory_config', required=False, default=None,
     #                help='Memory Config, will overwrite config in --config if present if memories not in -c this is required')
     p.add_argument('-s', '--symbols', action='append', default=[], 
                     help='CSV file with each row having symbol, first_addr, last_addr')
     p.add_argument('--log_blocks', default=False, const=True, nargs='?',
                    help="Enables QEMU's logging of basic blocks, options [irq, regs, exec, trace, trace-nochain]")
+    p.add_argument('--singlestep', default=False, const=True, nargs='?',
+                   help="Enables QEMU single stepping instructions")
     p.add_argument('-n', '--name', default='HALucinator',
                    help='Name of target for avatar, used for logging')
     p.add_argument('-r', '--rx_port', default=5555, type=int,
@@ -337,7 +343,8 @@ def main():
 
     emulate_binary(config, args.name, args.log_blocks,
                    args.rx_port, args.tx_port,
-                   elf_file=args.elf, gdb_port=args.gdb_port)
+                   elf_file=args.elf, gdb_port=args.gdb_port, 
+                   singlestep=args.singlestep)
 
 
 if __name__ == '__main__':

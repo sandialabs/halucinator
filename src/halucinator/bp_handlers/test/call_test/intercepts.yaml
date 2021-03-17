@@ -1,0 +1,9 @@
+intercepts:
+
+  - class: halucinator.bp_handlers.test.call_test.call_test.CallTest
+    function: run_test
+    symbol: run_test
+
+  - class: halucinator.bp_handlers.test.call_test.call_test.CallTest
+    function: end_test
+    symbol: run_test
