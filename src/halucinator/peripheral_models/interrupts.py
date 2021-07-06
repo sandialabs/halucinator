@@ -80,7 +80,7 @@ class Interrupts(object):
         active_irqs = set([irq_num for irq_num, state in cls.active.items() if state ])
         enabled_irqs = set([irq_num for irq_num, state in cls.enabled.items() if state ])
         active_irqs = active_irqs.intersection(enabled_irqs)
-        log.debug("Get Active ISRs: %s" % active_irqs)
+        # log.debug("Get Active ISRs: %s" % active_irqs)
         return active_irqs
 
     @classmethod

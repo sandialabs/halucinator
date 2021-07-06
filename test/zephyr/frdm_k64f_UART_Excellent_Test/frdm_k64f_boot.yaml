@@ -1,0 +1,27 @@
+intercepts:
+
+# This File contains all the break points
+# needed to boot zephyr on the Freedom K64F Board
+
+- class: halucinator.bp_handlers.SkipFunc
+  function: CLOCK_InitOsc0
+  symbol: CLOCK_InitOsc0
+
+- class: halucinator.bp_handlers.SkipFunc
+  symbol: CLOCK_BootToPeeMode
+  function: CLOCK_BootToPeeMode
+
+- class: halucinator.bp_handlers.SkipFunc
+  symbol: CLOCK_SetInternalRefClkConfig
+  function: CLOCK_SetInternalRefClkConfig
+
+- class: halucinator.bp_handlers.SkipFunc
+  symbol: CLOCK_SetSimConfig
+  function: CLOCK_SetSimConfig
+
+- class: halucinator.bp_handlers.SkipFunc
+  symbol: z_clock_driver_init
+  function: z_clock_driver_init
+
+
+

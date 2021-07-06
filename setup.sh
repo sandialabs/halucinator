@@ -1,11 +1,16 @@
 #!/bin/bash
 . /etc/bash_completion
+
+echo "Please See README.md for instructions"
+exit
+
 set -e 
 set -x
 sudo apt install -y ethtool python-tk gdb-multiarch tcpdump
 
 VIRT_ENV="halucinator"
 AVATAR_REPO=https://github.com/avatartwo/avatar2.git
+AVATAR_QEMU_REPO=
 
 CREATE_VIRT_ENV=true
 

@@ -3,8 +3,8 @@
 # certain rights in this software.
 
 import yaml
-from avatar2 import Avatar, QemuTarget, ARM_CORTEX_M3, ARM, TargetStates
-from .qemu_targets import ARMQemuTarget, ARMv7mQemuTarget
+from avatar2 import Avatar, QemuTarget, ARM_CORTEX_M3, ARM, ARM64, TargetStates
+from .qemu_targets import ARMQemuTarget, ARMv7mQemuTarget, ARM64QemuTarget
 from avatar2.peripherals.avatar_peripheral import AvatarPeripheral
 import logging
 import os
@@ -13,6 +13,7 @@ from IPython import embed
 #import gdbgui.backend as gdbgui
 import time
 import sys
+import argparse
 
 from .util import hexyaml
 #from . import bp_handlers
@@ -30,8 +31,8 @@ hal_log.setLogConfig()
 
 PATCH_MEMORY_SIZE = 4096
 INTERCEPT_RETURN_INSTR_ADDR = 0x20000000 - PATCH_MEMORY_SIZE
-ARCH_LUT={'cortex-m3': ARM_CORTEX_M3, 'arm': ARM}
-QEMU_ARCH_LUT={'cortex-m3': ARMv7mQemuTarget, 'arm': ARMQemuTarget}
+ARCH_LUT={'cortex-m3': ARM_CORTEX_M3, 'arm': ARM, 'arm64': ARM64}
+QEMU_ARCH_LUT={'cortex-m3': ARMv7mQemuTarget, 'arm': ARMQemuTarget, 'arm64': ARM64QemuTarget}
 
 
 def add_patch_memory(avatar, qemu):
@@ -91,7 +92,7 @@ def write_patch_memory(qemu):
     qemu.call_ret_0 = call_ret_0
 
 
-def find_qemu():
+def find_qemu(arch):
     '''
     Tries to find a valid Avatar-QEMU build to use for emulation
     Will use Environment Variable "HALUCINATOR_QEMU" as first choice
@@ -100,30 +101,47 @@ def find_qemu():
     and then <halucinator-root>/deps/avatar2/targets/build/qemu/aarch64-softmmu/qemu-system-aarch64
         
     '''
-    default = "../../deps/avatar2/target/build/qemu/arm-softmmu/qemu-system-arm"
+    arm32 = "../../deps/avatar2/target/build/qemu/arm-softmmu/qemu-system-arm"
     aarch64 = "../../deps/avatar2/targets/build/qemu/aarch64-softmmu/qemu-system-aarch64"
-    default_path = os.path.realpath(os.path.join(
-        os.path.dirname(__file__), default))
-    aarch64_path = os.path.realpath(os.path.join(
+    arm32_default_path = os.path.realpath(os.path.join(
+        os.path.dirname(__file__), arm32))
+    aarch64_default_path = os.path.realpath(os.path.join(
         os.path.dirname(__file__), aarch64))
 
-    if os.environ.get("HALUCINATOR_QEMU") is not None:
-        if not os.path.exists(os.environ.get("HALUCINATOR_QEMU")):
-            log.error('Path of "$HALUCINATOR_QEMU" is invalid"')
-            exit(1)
-        return os.environ.get("HALUCINATOR_QEMU")
+    if arch == ARM64:
+        if os.environ.get("HALUCINATOR_QEMU_ARM64") is not None:
+            if not os.path.exists(os.environ.get("HALUCINATOR_QEMU_ARM64")):
+                log.error('Path of "$HALUCINATOR_QEMU_ARM64" is invalid"')
+                exit(1)
+            return os.environ.get("HALUCINATOR_QEMU_ARM64")
 
-    if os.path.exists(default_path):
-        return default_path
-    elif os.path.exists(aarch64_path):
-        return aarch64_path
-    log.error("QEMU NOT FOUND.\n Set environment variable $HALUCINATOR_QEMU to  full path of avatar-qemu binary")
+        if os.path.exists(aarch64_default_path):
+            return aarch64_default_path
+
+        log.error("QEMU NOT FOUND.\n Set environment variable $HALUCINATOR_QEMU_ARM to full path of avatar-qemu binary")
+        exit(-1)
+    elif arch == ARM_CORTEX_M3 or arch == ARM:
+        if os.environ.get("HALUCINATOR_QEMU_ARM") is not None:
+            if not os.path.exists(os.environ.get("HALUCINATOR_QEMU_ARM")):
+                log.error('Path of "$HALUCINATOR_QEMU_ARM" is invalid"')
+                exit(1)
+            return os.environ.get("HALUCINATOR_QEMU_ARM")
+
+        if os.path.exists(arm32_default_path):
+            return arm32_default_path
+   
+        log.error("QEMU NOT FOUND.\n Set environment variable $HALUCINATOR_QEMU_ARM to full path of avatar-qemu binary")
+        exit(-1)
+    
+    log.error("QEMU Target not found for architecture")
+    log.error("Set environment variables HALUCINATOR_QEMU_ARM and/or HALUCINATOR_QEMU_ARM64")
     exit(1)
 
 
 def get_qemu_target(name, config, firmware=None, \
-        log_basic_blocks=False, gdb_port=1234, singlestep=False):
-    qemu_path = find_qemu()
+        log_basic_blocks=False, gdb_port=1234, singlestep=False,
+        qemu_args=None):
+    
     outdir = os.path.join('tmp', name)
     hal_stats.set_filename(outdir+"/stats.yaml")
     
@@ -132,6 +150,9 @@ def get_qemu_target(name, config, firmware=None, \
     
     avatar = Avatar(arch=arch, output_directory=outdir)
     avatar.config = config
+    avatar.cpu_model = config.machine.cpu_model
+
+    qemu_path = find_qemu(arch)
     log.info("GDB_PORT: %s"% gdb_port)
     log.info("QEMU Path: %s" % qemu_path)
 
@@ -144,7 +165,8 @@ def get_qemu_target(name, config, firmware=None, \
                              firmware=firmware,
                              executable=qemu_path,
                              entry_address=config.machine.entry_addr, 
-                             name=name
+                             name=name,
+                             qmp_unix_socket="/tmp/%s-qmp" % name
                             )
 
     if log_basic_blocks == 'irq':
@@ -171,6 +193,8 @@ def get_qemu_target(name, config, firmware=None, \
     
     if singlestep:
         qemu.additional_args.append('-singlestep')
+    if qemu_args is not None:
+        qemu.additional_args.extend(qemu_args.split())
 
     return avatar, qemu
 
@@ -201,7 +225,8 @@ def setup_memory(avatar, memory, record_memories=None):
 
 def emulate_binary(config, target_name=None, log_basic_blocks=None,
                    rx_port=5555, tx_port=5556, gdb_port=1234, 
-                   elf_file=None, db_name=None, singlestep=False):
+                   elf_file=None, db_name=None, singlestep=False,
+                   qemu_args=None):
 
     # Bug in QEMU about init stack pointer/entry point this works around
     if config.machine.arch == 'cortex-m3':
@@ -214,7 +239,8 @@ def emulate_binary(config, target_name=None, log_basic_blocks=None,
 
     avatar, qemu = get_qemu_target(target_name, config,
                                    log_basic_blocks=log_basic_blocks,
-                                   gdb_port=gdb_port, singlestep=singlestep)
+                                   gdb_port=gdb_port, singlestep=singlestep,
+                                   qemu_args=qemu_args)
 
     if 'remove_bitband' in config.options and config.options['remove_bitband']:
         log.info("Removing Bitband")
@@ -324,6 +350,8 @@ def main():
                    help="GDB_Port")
     p.add_argument('-e', '--elf', default=None,
                    help='Elf file, required to use recorder')
+    p.add_argument('-q','--qemu_args', nargs=argparse.REMAINDER,
+                   help='Additional arguments for QEMU')
 
     args = p.parse_args()
 
@@ -341,10 +369,15 @@ def main():
         log.error("Config invalid")
         exit(-1)
 
+    qemu_args = None
+    if args.qemu_args:
+        qemu_args = " ".join(args.qemu_args)
+
     emulate_binary(config, args.name, args.log_blocks,
                    args.rx_port, args.tx_port,
                    elf_file=args.elf, gdb_port=args.gdb_port, 
-                   singlestep=args.singlestep)
+                   singlestep=args.singlestep,
+                   qemu_args=qemu_args)
 
 
 if __name__ == '__main__':

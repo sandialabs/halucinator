@@ -9,9 +9,6 @@ from .ioserver import IOServer
 import logging
 log = logging.getLogger(__name__)
 
-
-
-
 class TyConsole(object):
    
     def __init__(self, ioserver):

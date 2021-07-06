@@ -22,10 +22,15 @@ class IOServer(Thread):
         self.tx_port = tx_port
         self.__stop = Event()
         self.context = zmq.Context()
+        io2hal_pipe = "ipc:///tmp/Halucinator2IoServer%i" % self.rx_port
         self.rx_socket = self.context.socket(zmq.SUB)
-        self.rx_socket.connect("tcp://localhost:%s" % self.rx_port)
+        self.rx_socket.connect(io2hal_pipe)
+        print(f"Connected to {io2hal_pipe}")
+        
+        hal2io_pipe = "ipc:///tmp/IoServer2Halucinator%i" % self.tx_port
         self.tx_socket = self.context.socket(zmq.PUB)
-        self.tx_socket.bind("tcp://*:%s" % self.tx_port)
+        self.tx_socket.connect(hal2io_pipe)
+        print(f"Connected to {hal2io_pipe}")
 
         self.poller = zmq.Poller()
         self.poller.register(self.rx_socket, zmq.POLLIN)

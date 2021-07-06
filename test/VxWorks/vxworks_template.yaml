@@ -1,0 +1,189 @@
+callables: []
+
+intercepts:
+
+#=================================================
+# Logging Handlers
+#=================================================
+
+  - class: halucinator.bp_handlers.vxworks.errors.ERROR
+    function: errnoSet
+    symbol: errnoSet
+
+  - class: halucinator.bp_handlers.vxworks.errors.ERROR
+    function: ios_error
+    symbol: ios_error
+
+  - class: halucinator.bp_handlers.vxworks.interrupts.Interrupts
+    function: intConnect
+    symbol: intConnect
+
+# =====================================================
+# Boot
+# =====================================================
+
+  # Set Boot Line 
+  - class: halucinator.bp_handlers.vxworks.boot.Boot
+    registration_args: {bootline: <BOARD_SPECIFIC>}
+    function: bootStringToStruct
+    symbol: bootStringToStruct
+
+# ================================================
+# tty Device
+# ================================================
+
+  # This class required defining the parameters for the ttyDev interfaces
+  # name(key):     come from calls to iosDevAdd, which must also be intercepted(see DOSFS section) 
+  # irq_num:       the irq number passed to intConnect
+  # enabled:       controls if the interrupt is by default enabled
+  # ird:           name of the method to call to provide a character usually tyIRd
+  # use_rx_task:   whether to directly call tyIRd or give to a semaphore to release a task
+
+  - class: halucinator.bp_handlers.vxworks.ty_dev.TYDev
+    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. /tyCo/0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x2), enabled: true}, 
+                              <BOARD_SPECIFIC>(e.g. /tyCo/1): {irq_num: <BOARD_SPECIFIC>(e.g. 0x3), enabled: true}, 
+                 ird: tyIRd, use_rx_task: false }
+    function: tyISR
+    symbol: <BOARD_SPECIFIC>tyISR  #Name of ISR usually given to intConnect
+  
+    # Only used if use_rx_task is used
+  - class: halucinator.bp_handlers.vxworks.ty_dev.TYDev
+    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. /tyCo/0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x2), enabled: true}, 
+                              <BOARD_SPECIFIC>(e.g. /tyCo/1): {irq_num: <BOARD_SPECIFIC>(e.g. 0x3), enabled: true}, 
+                 ird: tyIRd, use_rx_task: false }
+    function: rxTask
+    symbol: <BOARD_SPECIFIC>rxTaskReceiveMethod or
+    addr:   <BOARD_SPECIFIC>
+
+  - class: halucinator.bp_handlers.vxworks.ty_dev.TYDev
+    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. /tyCo/0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x2), enabled: true}, 
+                              <BOARD_SPECIFIC>(e.g. /tyCo/1): {irq_num: <BOARD_SPECIFIC>(e.g. 0x3), enabled: true}, 
+                 ird: tyIRd, use_rx_task: false }
+    function: tyRead
+    symbol: tyRead
+
+  - class: halucinator.bp_handlers.vxworks.ty_dev.TYDev
+    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. /tyCo/0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x2), enabled: true}, 
+                              <BOARD_SPECIFIC>(e.g. /tyCo/1): {irq_num: <BOARD_SPECIFIC>(e.g. 0x3), enabled: true}, 
+                 ird: tyIRd, use_rx_task: false }
+    function: tyWrite
+    symbol: tyWrite
+  
+  - class: halucinator.bp_handlers.vxworks.ty_dev.TYDev
+    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. /tyCo/0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x2), enabled: true}, 
+                              <BOARD_SPECIFIC>(e.g. /tyCo/1): {irq_num: <BOARD_SPECIFIC>(e.g. 0x3), enabled: true}, 
+                 ird: tyIRd, use_rx_task: false }
+    function: tyIoctl
+    symbol: tyIoctl
+
+# =================================================================
+# SysClock
+# =================================================================
+  
+  # Sets up timer to trigger interrupt which causes the scheduler 
+  # to execute irq_num comes from call to intConnect
+  - class: halucinator.bp_handlers.vxworks.sys_clock.SysClock
+    class_args: {irq_num: <BOARD_SPECIFIC>10, rate: 1, scale: 1000}
+    function: sysClkEnable
+    symbol: sysClkEnable
+
+  - class: halucinator.bp_handlers.vxworks.sys_clock.SysClock
+    class_args: {irq_num: <BOARD_SPECIFIC>10, rate: 1, scale: 10}
+    function: sysClkDisable
+    symbol: sysClkDisable
+
+# =======================================================
+#  Interrupts
+# =======================================================
+
+  - class: halucinator.bp_handlers.vxworks.interrupts.Interrupts
+    function: IntLvlVecChk
+    symbol: <BOARD_SPECIFIC>IntLvlVecChk  #Board Specific
+
+  - class: halucinator.bp_handlers.vxworks.interrupts.Interrupts
+    function: intEnable
+    symbol: intEnable
+
+  - class: halucinator.bp_handlers.vxworks.interrupts.Interrupts
+    function: intDisable
+    symbol: intDisable
+
+# =======================================================
+#  DOSFS
+# =======================================================
+
+  # Most the board specific functions for the DOS FS can
+  # are in the given as parameters to iosDrvInstall for 
+  # DOSFS 
+
+  - class: halucinator.bp_handlers.vxworks.ios_dev.IosDev
+    function: iosDevAdd
+    symbol: iosDevAdd
+
+  - class: halucinator.bp_handlers.vxworks.dos_fs.DosFsLib
+    function: create
+    symbol: <BOARD_SPECIFIC>Create
+
+  - class: halucinator.bp_handlers.vxworks.dos_fs.DosFsLib
+    function: delete
+    symbol: <BOARD_SPECIFIC>Delete
+
+  - class: halucinator.bp_handlers.vxworks.dos_fs.DosFsLib
+    function: open
+    symbol: <BOARD_SPECIFIC>Open
+
+  - class: halucinator.bp_handlers.vxworks.dos_fs.DosFsLib
+    function: close
+    symbol: <BOARD_SPECIFIC>Close
+
+  - class: halucinator.bp_handlers.vxworks.dos_fs.DosFsLib
+    function: read
+    symbol: <BOARD_SPECIFIC>Read
+
+  - class: halucinator.bp_handlers.vxworks.dos_fs.DosFsLib
+    function: write
+    symbol: <BOARD_SPECIFIC>Write
+  
+  - class: halucinator.bp_handlers.vxworks.dos_fs.DosFsLib
+    function: ioctl
+    symbol: <BOARD_SPECIFIC>Ioctl
+
+#==================================================
+# Ethernet
+#==================================================
+
+# This class required defining the parameters for the Ethernet interfaces
+# name(key):     come from calls to iosDevAdd, which must also be intercepted(see DOSFS section)
+#                                 
+# irq_num:       the irq number passed to intConnect
+# enabled:       controls if the interrupt is by default enabled
+# ird:           name of the method to call to provide a character usually tyIRd
+# use_rx_task:   whether to directly call tyIRd or give to a semaphore to release a task
+
+  - class:  halucinator.bp_handlers.vxworks.ethernet.Ethernet
+    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. eth0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x19), enabled: false}}}
+    registration_args: {end_handle_rcv: <BOARD_SPECIFIC>eth_handleRcvInt}
+    function: ethernet_isr
+    symbol: <BOARD_SPECIFIC>eth_ISR
+
+  - class:  halucinator.bp_handlers.vxworks.ethernet.Ethernet
+    class_args: {interfaces: {eth0: {irq_num: <BOARD_SPECIFIC>0x19, enabled: false}}}
+    function: handleEndIntRcv
+    symbol: <BOARD_SPECIFIC>eth_handleRcvInt
+
+  - class: halucinator.bp_handlers.vxworks.ethernet.Ethernet
+    class_args: {interfaces: {eth0: {irq_num: <BOARD_SPECIFIC>0x19, enabled: false}}}
+    function: xSend
+    symbol: <BOARD_SPECIFIC>eth_Send
+  
+  - class: halucinator.bp_handlers.vxworks.ethernet.Ethernet
+    class_args: {interfaces: {eth0: {irq_num: <BOARD_SPECIFIC>0x19, enabled: false}}}
+    function: xStart
+    symbol: <BOARD_SPECIFIC>eth_Start
+
+  - class: halucinator.bp_handlers.vxworks.ethernet.Ethernet
+    class_args: {interfaces: {eth0: {irq_num: <BOARD_SPECIFIC>0x19, enabled: false}}}
+    function: xIoctl
+    symbol: <BOARD_SPECIFIC>eth_Ioctl
+
+

@@ -1,0 +1,9 @@
+*** Booting Zephyr OS version 2.3.99  ***
+Enter a line
+test
+line: test
+last char was: 0x74
+another line
+line: another line
+last char was: 0x65
+

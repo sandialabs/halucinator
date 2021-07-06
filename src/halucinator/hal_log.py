@@ -1,3 +1,7 @@
+# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC 
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, 
+# the U.S. Government retains certain rights in this software.
+
 '''
 Uses config file format to control logging, first looks in local 
 directory for config file and uses it if set, else uses the

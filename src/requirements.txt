@@ -5,3 +5,5 @@ pyelftools
 scapy==2.4.4 
 pycparser
 avatar2
+pyserial
+angr

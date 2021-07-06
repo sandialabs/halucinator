@@ -27,21 +27,31 @@ Note:  This has been lightly tested on Ubuntu 16.04, and 18.04
     source ~/.local/bin/virtualenvwrapper.sh
     ```
 
+1. Get and install Avatar
+    ```sh
+    cd deps
+    git clone AVATAR_REPO
+    cd <repo_root>/avatar2
+    pip install -e .
+    
+1. Get and build Avatar QEMU
+    ```sh
+    cd <repo_root>/deps/avatar2/targets/src
+    git clone AVATAR_QEMU_REPO
+    cd ..  (<repo_root>/deps/avatar2/targets)
+    ./build_qemu.sh
+    ```
+
 1.  Install Halucinator 
     Make sure you are in you virtual environment and then run
     ```
     pip install -r src/requirements.txt
     pip install -e src
     ```
-1. Install Avatar's QEMU and GDB (Select avatar-qemu and gdb-arm)
-   ```
-   python -m avatar2.installer
-   ```
-   This step will take a while the first time, and you may have to make your terminal wider
-
-1. Set environmental variable for HALUCINATOR_QEMU
+1. Set environmental variables for QEMU
   ```
-    export HALUCINATOR_QEMU=`readlink -f ~/.avatar2/avatar-qemu/arm-softmmu/qemu-system-arm`
+    export HALUCINATOR_QEMU_ARM=`readlink -f <repo_root>/deps/avatar2/targets/build/qemu/arm-softmmu/qemu-system-arm`
+    export HALUCINATOR_QEMU_ARM64=`readlink -f <repo_root>deps/avatar2/targets/build/qemu/aarch64-softmmu/qemu-system-aarch64`
   ```
 
 1.  Simlink gdb-multiarch to arm-none-eabi-gdb
@@ -61,13 +71,15 @@ the virtual environment using the postactivate and predeactivate scripts below.
 Contents of $VIRTUAL_ENV/bin/postactivate
 
 ```sh
-export HALUCINATOR_QEMU=<full path to your qemu>
+export HALUCINATOR_QEMU_ARM=<full path to your qemu-system-arm>
+export HALUCINATOR_QEMU_ARM64=<full path to your qemu-system-aarch64>
 ```
 
 Contents of $VIRTUAL_ENV/bin/predeactivate
 
 ```sh
-unset HALUCINATOR_QEMU
+unset HALUCINATOR_QEMU_ARM
+unset HALUCINATOR_QEMU_ARM64
 ```
 
 ## Running
@@ -155,13 +167,8 @@ hal_dev_uart -i=1073811456
 In separate terminal start halucinator with the firmware.
 
 ```bash
-<<<<<<< HEAD
-
-<halucinator_repo_root>$ halucinator -c=test/STM32/example/Uart_Hyperterminal_IT_O0_config.yaml \
-=======
 workon halucinator
 <halucinator_repo_root>$./halucinator -c=test/STM32/example/Uart_Hyperterminal_IT_O0_config.yaml \
->>>>>>> 2e7b0cf36731bf347817ef1c5e1685e89bf28059
   -c=test/STM32/example/Uart_Hyperterminal_IT_O0_addrs.yaml \
   -c=test/STM32/example/Uart_Hyperterminal_IT_O0_memory.yaml --log_blocks -n Uart_Example
 
@@ -198,8 +205,8 @@ and the later files overwriting any collisions from previous file.  The config
 is specified as follows.  Default field values are in () and types are in <>
 
 ```yaml
-machine:   # Optional, describes qemu machine used in avatar entry optional defaults in ()
-           # if never specified default settings as below are used. 
+machine:   # Optional, describes qemu machine used in avatar entry optional
+           # if never specified default settings as show in () below are used. 
   arch: (cortex-m3)<str>,
   cpu_model: (cortex-m3)<str>,
   entry_addr: (None)<int>,  # Initial value to pc reg. Obtained from 0x0000_0004
@@ -251,74 +258,9 @@ options: # Optional, Key:Value pairs you want accessible during emulation
 
 ```
 
-<<<<<<< HEAD
 The symbols in the config can also be specified using one or more symbols files
 passed in using -s. This is a csv file each line defining a symbol as shown below
 
-=======
-Logs are kept in the `tmp/<value of -n option>`. e.g `tmp/Uart_Example/`
-
-## Config file
-
-How the emulation is performed is controlled by a yaml config file.  It is passed 
-in using a the -c flag, which can be repeated with the config file being appended
-and the later files overwriting any collisions from previous file.  The config 
-is specified as follows.  Default field values are in () and types are in <>
-
-```yaml
-machine:   # Optional, describes qemu machine used in avatar entry optional defaults in ()
-           # if never specified default settings as below are used. 
-  arch: (cortex-m3)<str>,
-  cpu_model: (cortex-m3)<str>,
-  entry_addr: (None)<int>,  # Initial value to pc reg. Obtained from 0x0000_0004
-                        # of memory named init_mem if it exists else memory
-                        # named flash
-  init_sp: (None)<int>,     # Initial value for sp reg, Obtained from 0x0000_0000
-                        # of memory named init_mem if it exists else memory
-                        # named flash
-  gdb_exe: ('arm-none-eabi-gdb')<path> # Path to gdb to use
-
-
-memories:  #List of the memories to add to the machine
-  - name: <str>,       # Required
-    base_addr:  <int>, # Required
-    size: <int>,       # Required
-    perimissions: (rwx)<r--|rw-|r-x>, # Optional 
-    file: filename<path>   # Optional Filename to populate memory with, use full path or
-                      # path relative to this config file, blank memory used if not specified
-    emulate: class<AvatarPeripheral subclass>    # Class to emulate memory 
-
-peripherals:  # Optional, A list of memories, except emulate field required
-
-intercepts:  # Optional, list of intercepts to places
-  - class:  <BPHandler subclass>,  # Required use full import path
-    function: <str>     # Required: Function name in @bp_handler([]) used to
-                        #   determine class method used to handle this intercept
-    addr: (from symbols)<int>  # Optional, Address of where to place this intercept,
-                               # generally recommend not setting this value, but
-                               # instead setting symbol and adding entry to
-                               # symbols for this makes config files more portable
-    symbol: (Value of function)<str>  # Optional, Symbol name use to determine address
-    class_args: ({})<dict>  # Optional dictionary of args to pass to class's
-                       # __init__ method, keys are parameter names
-    registration_args: ({})<dict>  # Optional: Arguments passed to register_handler
-                              # method when adding this method
-    run_once: (false)<bool> # Optional: Set to true if only want intercept to run once
-    watchpoint: (false)<bool> # Optional: Set to true if this is a memory watch point
-
-symbols:  # Optional, dictionary mapping addresses to symbol names, used to
-          # determine addresses for symbol values in intercepts
-  addr0<int>: symbol_name<str>
-  addr1<int>: symbol1_name<str>
-
-options: # Optional, Key:Value pairs you want accessible during emulation
-
-```
-
-The symbols in the config can also be specified using one or more symbols files
-passed in using -s. This is a csv file each line defining a symbol as shown below
-
->>>>>>> 2e7b0cf36731bf347817ef1c5e1685e89bf28059
 ```csv
 symbol_name<str>, start_addr<int>, last_addr<int>
 ```
