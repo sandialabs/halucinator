@@ -21,7 +21,8 @@ class ArgumentLogger(BPHandler):
         Halucinator configuration usage:
         - class: halucinator.bp_handlers.ArgumentLogger
           function: <func_name>
-          addr: <addr>
+          symbol: <symbol> or
+          addr: <addr> 
           registration_args:{num_args: <int>, log_ret_addr:true,
                              intercept:false, ret_value:null}
     '''

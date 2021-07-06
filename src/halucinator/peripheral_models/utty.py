@@ -203,7 +203,12 @@ class UTTYModel(object):
     def get_rx_char(cls, interface_id, get_time=False):
         log.info("Getting RX char from: %s" % str(interface_id))
         interface = cls.interfaces[interface_id]
-        return interface.get_rx_char(get_time)
+        char = interface.get_rx_char(get_time)
+        try:
+            char = ord(char)
+        except TypeError:
+            pass
+        return char
     @classmethod
     def get_rx_buff_size(cls,interface_id):
         log.info("Getting RX buff size from: %s" % str(interface_id))

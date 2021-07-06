@@ -1,3 +1,7 @@
+# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC 
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, 
+# the U.S. Government retains certain rights in this software.
+
 import yaml
 import logging
 import os
@@ -304,6 +308,19 @@ class HalucinatorConfig(object):
                 return sym.name
         return hex(addr)
 
+    def memory_by_name(self, name):
+        '''
+            Finds the memory with a given name
+
+            :param name:  Name to find memory for
+            :ret (memory, or None:
+        '''
+        for m_name, mem in self.memories.items():
+            if m_name == name:
+                return mem
+        
+        return None
+
     def memory_containing(self, addr):
         '''
             Finds the memory that contains the given address
@@ -311,7 +328,7 @@ class HalucinatorConfig(object):
             :param addr:  Address to find memory for
             :ret (memory, or None):
         '''
-        for m_name, mem in self.memories:
+        for m_name, mem in self.memories.items():
             if addr >= mem.base_addr and addr < (mem.base_addr + mem.size):
                 return mem
         
@@ -337,19 +354,20 @@ class HalucinatorConfig(object):
         bp_addrs = {}
         del_inters = []
         for inter in self.intercepts:
-            if not inter.is_valid():
-                hal_log.error("Config: %s" % mem)
-                valid = False
-                if inter.bp_addr in bp_addrs:
-                    hal_log.warning("Duplicate Intercept:\n\tOld: %s\n\tNew: %s" % \
-                        (bp_addrs[inter.bp_addr][1], inter))
-                    del_inters = bp_addrs[inter.bp_addr]
-                bp_addrs[inter.bp_addr] = inter
-            else:
-                if self.machine.arch == 'cortex-m3' and inter.watchpoint == False and inter.bp_addr is not None:
+            if self.machine.arch == 'cortex-m3' and inter.watchpoint == False and inter.bp_addr is not None:
                     inter.bp_addr &= 0xFFFFFFFE  # Clear thumb bit so BP is on right address
 
+            if inter.is_valid():
+                if inter.bp_addr in bp_addrs:
+                    hal_log.warning("Duplicate Intercept:\n\tOld: %s\n\tNew: %s" % \
+                        (bp_addrs[inter.bp_addr], inter))
+                    del_inters.append(bp_addrs[inter.bp_addr])
+                bp_addrs[inter.bp_addr] = inter
+            else:
+                hal_log.error("Config: %s" % mem)
+                valid = False
+
+        # Remove duplicate intercepts
         for inter in del_inters:
             self.intercepts.remove(inter)
-
         return valid

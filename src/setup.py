@@ -24,13 +24,12 @@ def get_packages(rel_dir):
 
 
 setup(name='halucinator',
-      version='1.0.5',
+      version='1.1.0',
       description='Firmware emulation and rehosting framework',
       author='Abe Clements and Eric Gustafson',
       packages=get_packages('halucinator'),
       entry_points ={'console_scripts': [
             'halucinator = halucinator.main:main',
-<<<<<<< HEAD
             'qemulog2trace = tools.qemu_to_trace:main',
             'hal_make_addr= halucinator.util.elf_sym_hal_getter:main',
             'hal_dev_uart=halucinator.external_devices.uart:main',
@@ -40,9 +39,6 @@ setup(name='halucinator',
             'hal_dev_host_eth_server=halucinator.external_devices.host_ethernet_server:main',
             'hal_dev_802_15_4=halucinator.external_devices.IEEE802_15_4:main',
             'hal_dev_irq_trigger=halucinator.external_devices.trigger_interrupt:main'
-=======
-            'qemulog2trace= tools.qemu_to_trace:main',
->>>>>>> 2e7b0cf36731bf347817ef1c5e1685e89bf28059
         ]},
       requires=['avatar2',    
                 'zeromq',

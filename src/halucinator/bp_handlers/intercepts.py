@@ -180,6 +180,7 @@ def interceptor(avatar, message):
     # print method
     try:
         intercept, ret_value = method(cls, target, pc)
+
         if intercept:
             hal_stats.write_on_update('bypassed_funcs', hal_stats.stats[bp]['function'])
     except:

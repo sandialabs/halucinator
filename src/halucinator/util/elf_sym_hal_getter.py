@@ -3,7 +3,7 @@
 # certain rights in this software.
 
 import yaml
-from . import hexyaml
+from halucinator.util import hexyaml
 import angr
 import os
 

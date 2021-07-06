@@ -1,3 +1,7 @@
+# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC 
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, 
+# the U.S. Government retains certain rights in this software.
+
 from ..bp_handler import BPHandler, bp_handler
 import logging, sys
 from ... import hal_log
@@ -58,7 +62,7 @@ class ReturnConstant(BPHandler):
     @bp_handler
     def return_constant(self, qemu, addr):
         '''
-            Intercept Execution and return 0
+            Intercept Execution and return constant
         '''
         if not self.silent[addr]:
             hal_log.info("ReturnConstant: %s : %#x" %(self.func_names[addr], self.ret_values[addr]))
@@ -123,3 +127,69 @@ class KillExit(BPHandler):
         avatar.stop()
         avatar.shutdown()
         sys.exit(0)
+
+
+class SetRegisters(BPHandler):
+    '''
+        Break point handler that changes a register
+
+        Halucinator configuration usage:
+        - class: halucinator.bp_handlers.SetRegisters
+          function: <func_name> (Can be anything)
+          registration_args: { registers: {'<reg_name>':<value>}}
+          addr: <addr>
+          addr_hook: True
+    '''
+    def __init__(self, filename=None):
+        self.silent = {}
+        self.changes = {}
+
+    def register_handler(self, qemu, addr, func_name, registers={}, silent=False):
+        self.silent[addr] = silent
+        log.debug("Registering: %s at addr: %s with SetRegisters %s" %(func_name, hex(addr), registers))
+        self.changes[addr] = registers
+        return SetRegisters.set_registers
+
+    @bp_handler
+    def set_registers(self, qemu, addr, *args):
+        '''
+            Intercept Execution and return 0
+        '''
+        for change in self.changes[addr].items():
+            reg = change[0]
+            value = change[1]
+            qemu.write_register(reg, value)
+            log.debug("set_register: %s : %#x" %(reg, value))
+        return False, 0
+
+class SetMemory(BPHandler):
+    '''
+        Break point handler that changes a memory address
+
+        Halucinator configuration usage:
+        - class: halucinator.bp_handlers.SetMemory
+          function: <func_name> (Can be anything)
+          registration_args: { addresses: {<mem_address>: <value>}}
+          addr: <addr>
+    '''
+    def __init__(self, filename=None):
+        self.silent = {}
+        self.changes = {}
+
+    def register_handler(self, qemu, addr, func_name, addresses={}, silent=False):
+        self.silent[addr] = silent
+        log.debug("Registering: %s at addr: %s with SetMemory %s" %(func_name, hex(addr), addresses))
+        self.changes[addr] = addresses
+        return SetMemory.set_memory
+
+    @bp_handler
+    def set_memory(self, qemu, addr, *args):
+        '''
+            Intercept Execution and return 0
+        '''
+        for change in self.changes[addr].items():
+            address = change[0]
+            value = change[1]
+            qemu.write_memory(address, 4, value)
+            log.debug("set_memory: %s : %#x" %(address, value))
+        return False, 0
