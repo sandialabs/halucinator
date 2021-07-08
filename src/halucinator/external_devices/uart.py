@@ -24,7 +24,7 @@ class UARTPrintServer(object):
             return
         else:
             self.prev_print = txt
-            print("%s" % txt, end=' ', flush=True)
+            print("%s" % txt, end='', flush=True)
 
     def send_data(self, id, chars):
         d = {'id': id, 'chars': chars}

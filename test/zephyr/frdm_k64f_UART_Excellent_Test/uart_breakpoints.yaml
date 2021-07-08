@@ -1,0 +1,31 @@
+intercepts:
+
+# These three breakpoints are used to interact with the UART system.
+# They implement both input and output. Our tests have shown them to be
+# fairly universal between boards. 
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: uart_mcux_init
+  function: uart_mcux_init
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: uart_mcux_poll_out
+  function: uart_mcux_poll_out
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: uart_mcux_poll_in
+  function: uart_mcux_poll_in
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: uart_mcux_fifo_read
+  function: uart_mcux_fifo_read
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: UART_GetStatusFlags
+  function: UART_GetStatusFlags
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: console_getline
+  function: console_getline
+
+

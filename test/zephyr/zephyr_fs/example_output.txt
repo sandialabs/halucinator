@@ -1,0 +1,34 @@
+*** Booting Zephyr OS build zephyr-v2.3.0-1845-ge41c083b6dc6  ***
+Begin tests...
+/lfs opendir: 1
+  F 0 openMultipleTest2
+  F 0 syncClosedTest
+  F 0 seriesTest
+  F 0 parallelTest
+  F 0 truncateTest
+  F 0 openModeTest
+  F 0 appendReadTest
+  F 0 readOnlyTest
+  F 0 openDuplicateTest
+  F 0 seekSetTest
+  F 0 statExistTest
+  F 0 writeCloseTest
+  F 0 appendReadWriteTest
+  F 0 appendWriteTest
+  D 0 doesExist2
+  D 0 doesExistRenamed
+  F 0 syncDuplicateTest
+  D 0 vfsTest1
+  F 0 readCloseTest
+  F 0 openMultipleTest
+  F 0 statSizeTest
+  F 0 seekEndTest
+  F 0 seekAppendTest
+  D 0 renameDir
+  F 0 seekCurrentTest
+  F 0 closeDuplicateTest
+  D 0 newDir
+  F 0 writeOnlyTest
+End of files
+All tests complete.
+

@@ -96,17 +96,20 @@ def start(rx_port=5555, tx_port=5556, qemu=None):
     log.info('Starting Peripheral Server, In port %i, outport %i' %
              (rx_port, tx_port))
     # Setup subscriber
+    io2hal_pipe = "ipc:///tmp/IoServer2Halucinator%i" % rx_port
     __rx_socket__ = __rx_context__.socket(zmq.SUB)
-
-    __rx_socket__.connect("tcp://localhost:%i" % rx_port)
+    __rx_socket__.bind(io2hal_pipe)
+    log.debug(f"Bound to {io2hal_pipe}")
 
     for topic in list(__rx_handlers__.keys()):
         log.info("Subscribing to: %s" % topic)
         __rx_socket__.setsockopt_string(zmq.SUBSCRIBE, topic)
 
     # Setup Publisher
+    hal2io_pipe = 'ipc:///tmp/Halucinator2IoServer%i' % tx_port
     __tx_socket__ = __tx_context__.socket(zmq.PUB)
-    __tx_socket__.bind("tcp://*:%i" % tx_port)
+    __tx_socket__.bind(hal2io_pipe)
+    log.debug(f"Bound to {hal2io_pipe}")
 
     #__process = Process(target=run_server).start()
 

@@ -1,0 +1,184 @@
+intercepts:
+
+# Clock stubs
+
+- class: halucinator.bp_handlers.SkipFunc
+  function: CLOCK_InitOsc0
+  symbol: CLOCK_InitOsc0
+
+- class: halucinator.bp_handlers.SkipFunc
+  symbol: CLOCK_BootToPeeMode
+  function: CLOCK_BootToPeeMode
+
+- class: halucinator.bp_handlers.SkipFunc
+  symbol: CLOCK_SetInternalRefClkConfig
+  function: CLOCK_SetInternalRefClkConfig
+
+- class: halucinator.bp_handlers.SkipFunc
+  symbol: CLOCK_SetSimConfig
+  function: CLOCK_SetSimConfig
+
+- class: halucinator.bp_handlers.SkipFunc
+  symbol: z_clock_driver_init
+  function: z_clock_driver_init
+
+# UART impls
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: uart_mcux_init
+  function: uart_mcux_init
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: uart_mcux_poll_out
+  function: uart_mcux_poll_out
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: uart_mcux_poll_in
+  function: uart_mcux_poll_in
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: uart_mcux_fifo_read
+  function: uart_mcux_fifo_read
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: UART_GetStatusFlags
+  function: UART_GetStatusFlags
+
+- class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
+  symbol: console_getline
+  function: console_getline
+
+# Flash Stubs
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: flash_area_open
+  function: flash_area_stub
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: flash_area_close
+  function: flash_area_stub
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: flash_area_erase
+  function: flash_area_stub
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: flash_area_get_device
+  function: flash_area_stub
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: flash_area_read
+  function: flash_area_stub
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: flash_area_write
+  function: flash_area_stub
+
+# Mounting lfs
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_mount
+  function: fs_mount
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_statvfs
+  function: fs_statvfs
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_stat
+  function: fs_stat
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_open
+  function: fs_open
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_read
+  function: fs_read
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_write
+  function: fs_write
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_seek
+  function: fs_seek
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_close
+  function: fs_close
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_unmount
+  function: fs_unmount
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_unlink
+  function: fs_unlink
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_tell
+  function: fs_tell
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_sync
+  function: fs_sync
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_closedir
+  function: fs_closedir
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_mkdir
+  function: fs_mkdir
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_opendir
+  function: fs_opendir
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_readdir
+  function: fs_readdir
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_rename
+  function: fs_rename
+
+- class: halucinator.bp_handlers.zephyr.zephyr_fs.ZephyrFS
+  symbol: fs_truncate
+  function: fs_truncate
+
+
+# Helpful breakpoints
+
+- class: halucinator.bp_handlers.IPythonShell
+  symbol: z_arm_fault
+  function: z_arm_fault
+
+# UART TODO
+
+- class: halucinator.bp_handlers.IPythonShell
+  symbol: uart_console_isr
+  function: uart_console_isr
+
+- class: halucinator.bp_handlers.IPythonShell
+  symbol: uart_mcux_configure
+  function: uart_mcux_configure
+
+- class: halucinator.bp_handlers.IPythonShell
+  symbol: uart_mcux_poll_in
+  function: uart_mcux_poll_in
+
+- class: halucinator.bp_handlers.IPythonShell
+  symbol: uart_mcux_err_check
+  function: uart_mcux_err_check
+
+- class: halucinator.bp_handlers.IPythonShell
+  symbol: UART_GetDefaultConfig
+  function: UART_GetDefaultConfig
+
+- class: halucinator.bp_handlers.IPythonShell
+  symbol: UART_ClearStatusFlags
+  function: UART_ClearStatusFlags
+
+

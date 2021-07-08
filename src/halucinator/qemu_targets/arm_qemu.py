@@ -210,7 +210,7 @@ class ARMQemuTarget(QemuTarget):
     def execute_return(self, ret_value):
         if ret_value != None:
             # Puts ret value in r0
-            self.regs.r0 = ret_value
+            self.regs.r0 = ret_value & 0xFFFFFFFF #Truncate to 32 bits
         self.regs.pc = self.regs.lr
 
 
@@ -254,6 +254,7 @@ class ARMQemuTarget(QemuTarget):
 
     def irq_clear_bp(self, irq_num):
         addr = self.get_irq_base_addr() + irq_num
+        log.debug("Clearing IRQ BP")
         self.write_memory(addr,1,0)
 
     def irq_pulse(self, irq_num=1, cpu=0):
@@ -329,9 +330,10 @@ class ARMQemuTarget(QemuTarget):
             # Build instructions in reverse order so we know offset to end
             # Where we store the address of the function to be called
             
-            instrs.append(struct.pack('<I', addr).decode('latin-1'))  # Address of callee
+            instrs.append(struct.pack('<I', addr))  # Address of callee
             instrs.append(self.assemble("mov pc, lr"))  # Return
-            offset = len(''.join(instrs)) #PC is two instructions ahead so need to calc offset
+            # import IPython; IPython.embed()
+            offset = len(b''.join(instrs)) #PC is two instructions ahead so need to calc offset
                                           # two instructions before its execution
             instrs.append(self.assemble("pop {lr}"))  # Retore LR
            
@@ -344,13 +346,13 @@ class ARMQemuTarget(QemuTarget):
             instrs.append(self.assemble('blx lr'))    # Make Call
             instrs.append(self.assemble("ldr lr, [pc, #%i]" % offset)) # Load Callee Addr
             # instrs.append(self.assemble("push {lr}")) # Have to Save before
-            instructions = ''.join(instrs)
-            instr_bytes = bytearray(instructions,'latin-1')
-            mem = self.hal_alloc(len(instr_bytes))
+            instructions = b''.join(instrs)
+            # instr_bytes = bytearray(instructions,'latin-1')
+            mem = self.hal_alloc(len(instructions))
             
             bytes_written = 0
             while instrs:
-                bytearr = bytearray(instrs.pop(), 'latin-1')
+                bytearr = instrs.pop()
                 inst_addr = mem.base_addr + bytes_written
                 self.write_memory(inst_addr, 1, 
                                     bytearr, len(bytearr), raw=True)

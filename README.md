@@ -68,6 +68,21 @@ Note:  This has been lightly tested and 18.04
     source ~/.local/bin/virtualenvwrapper.sh
     ```
 
+1. Get and install Avatar
+    ```sh
+    cd deps
+    git clone AVATAR_REPO
+    cd <repo_root>/avatar2
+    pip install -e .
+    
+1. Get and build Avatar QEMU
+    ```sh
+    cd <repo_root>/deps/avatar2/targets/src
+    git clone AVATAR_QEMU_REPO
+    cd ..  (<repo_root>/deps/avatar2/targets)
+    ./build_qemu.sh
+    ```
+
 1.  Install Halucinator 
     Make sure you are in you virtual environment and then run
     ```
@@ -242,8 +257,8 @@ and the later files overwriting any collisions from previous file.  The config
 is specified as follows.  Default field values are in () and types are in <>
 
 ```yaml
-machine:   # Optional, describes qemu machine used in avatar entry optional defaults in ()
-           # if never specified default settings as below are used. 
+machine:   # Optional, describes qemu machine used in avatar entry optional
+           # if never specified default settings as show in () below are used. 
   arch: (cortex-m3)<str>,
   cpu_model: (cortex-m3)<str>,
   entry_addr: (None)<int>,  # Initial value to pc reg. Obtained from 0x0000_0004
@@ -294,6 +309,7 @@ symbols:  # Optional, dictionary mapping addresses to symbol names, used to
 options: # Optional, Key:Value pairs you want accessible during emulation
 
 ```
+<<<<<<< HEAD
 ## Config file
 
 How the emulation is performed is controlled by a yaml config file.  It is passed 
@@ -350,6 +366,8 @@ symbols:  # Optional, dictionary mapping addresses to symbol names, used to
 options: # Optional, Key:Value pairs you want accessible during emulation
 
 ```
+=======
+>>>>>>> d058945871d5a8b85f34a078916dc04150283438
 
 The symbols in the config can also be specified using one or more symbols files
 passed in using -s. This is a csv file each line defining a symbol as shown below

@@ -6,11 +6,11 @@
     Creates a config file using memory description, intercepts and a elf
     file
 '''
-from .tools import hexyaml
+from halucinator.util import hexyaml
 import yaml
 import os
 
-from .tools.elf_sym_hal_getter import get_functions_and_addresses
+from halucinator.util.elf_sym_hal_getter import get_functions_and_addresses
 
 
 def get_addr_for_intercepts(intercepts, firmware):
