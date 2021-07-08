@@ -2,16 +2,17 @@
 
 ## Setup in a Docker
 
-Clone repo
+See wiki for instructions for building internal to Sandia
+
+Clone repos into following locations
 ```
 git clone git@github.com/halucinator/halucinator.git
-git clone git@github.com/halucinator/avatar2.git
-git clone git@github.com/halucinator/avatar-qemu.git
+git clone git@github.com/halucinator/avatar2.git halucinator/deps/avatar2
+git clone git@github.com/halucinator/avatar-qemu.git halucinator/deps/avatar2/targets/src/avatar-qemu
 ```
 
-Extract `Dockerfile` from the halucinator tar.gz
-
-Then run
+Then run 
+Building the docker will take a long time
 ```
 docker build -t halucinator ./
 docker run --name halucinator --rm -i -t halucinator bash
@@ -42,7 +43,7 @@ should then see text echoed followed by.
 
 ## Setup in Virtual Environment
 
-Note:  This has been lightly tested and 18.04
+Note:  This has been lightly tested on Ubuntu 18.04 and 20.04
 
 1.  Install dependencies using `./install_deps.sh`
 
@@ -309,7 +310,6 @@ symbols:  # Optional, dictionary mapping addresses to symbol names, used to
 options: # Optional, Key:Value pairs you want accessible during emulation
 
 ```
-<<<<<<< HEAD
 ## Config file
 
 How the emulation is performed is controlled by a yaml config file.  It is passed 
@@ -366,8 +366,6 @@ symbols:  # Optional, dictionary mapping addresses to symbol names, used to
 options: # Optional, Key:Value pairs you want accessible during emulation
 
 ```
-=======
->>>>>>> d058945871d5a8b85f34a078916dc04150283438
 
 The symbols in the config can also be specified using one or more symbols files
 passed in using -s. This is a csv file each line defining a symbol as shown below
