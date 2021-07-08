@@ -1,13 +1,54 @@
 # HALucinator - Firmware rehosting through abstraction layer modeling.
 
-## Setup
+## Setup in a Docker
 
-Note:  This has been lightly tested on Ubuntu 16.04, and 18.04
+Clone repo
+```
+git clone git@github.com/halucinator/halucinator.git
+git clone git@github.com/halucinator/avatar2.git
+git clone git@github.com/halucinator/avatar-qemu.git
+```
+
+Extract `Dockerfile` from the halucinator tar.gz
+
+Then run
+```
+docker build -t halucinator ./
+docker run --name halucinator --rm -i -t halucinator bash
+#Inside Docker container run
+hal_dev_uart -i=1073811456
+```
+
+In separate terminal run
+```
+docker exec -it halucinator bash
+#Inside docker container run
+./test/STM32/example/run.sh 
+```
+
+You will eventually see in both terminals messages containing
+```
+ ****UART-Hyperterminal communication based on IT ****
+ Enter 10 characters using keyboard :
+```
+
+Enter 10 Characters in the first terminal running `hal_dev_uart` press enter
+should then see text echoed followed by.
+
+```txt
+ Example Finished
+```
+
+
+## Setup in Virtual Environment
+
+Note:  This has been lightly tested and 18.04
 
 1.  Install dependencies using `./install_deps.sh`
 
 1.  Create and activate a python3 virtual environment (I use virtualmachine 
-    wrapper but you can do this however you like)
+    wrapper but it is not required).  You often have to restart you terminal 
+    after installing virutalmachine wrapper for below to work
     ```
        mkvirtualenv -p `which python3` halucinator
     ```
@@ -33,20 +74,26 @@ Note:  This has been lightly tested on Ubuntu 16.04, and 18.04
     pip install -r src/requirements.txt
     pip install -e src
     ```
-1. Install Avatar's QEMU and GDB (Select avatar-qemu and gdb-arm)
+1. Install Avatar and Avatar QEMU
    ```
-   python -m avatar2.installer
-   ```
-   This step will take a while the first time, and you may have to make your terminal wider
+   clone halucinator fork of avatar2 into <halucinator_root>/deps/avatar2
+   clone HALucinator fork of avatar-qemu into <halucinator_root>/deps/avatar2/targets/src/avatar-qemu
 
-1. Set environmental variable for HALUCINATOR_QEMU
-  ```
-    export HALUCINATOR_QEMU=`readlink -f ~/.avatar2/avatar-qemu/arm-softmmu/qemu-system-arm`
+   cd <halucinator_root>/deps/avatar2
+   pip install -e .
+   cd  <halucinator_root>/deps/avatar2/targets
+   ./build_qemu.sh
+   ```
+
+1. Set environmental variable for HALUCINATOR_QEMU_ARM
+  ```sh
+  export HALUCINATOR_QEMU_ARM=<HALUCINOTOR_ROOT>/deps/avatar2/targets/build/qemu/arm-softmmu/qemu-system-arm
+  export HALUCINATOR_QEMU_ARM64=<HALUCINOTOR_ROOT>/deps/avatar2/targets/build/qemu/aarch64-softmmu/qemu-system-aarch64
   ```
 
 1.  Simlink gdb-multiarch to arm-none-eabi-gdb
-    If you don't have arm-none-eabi-gdb on your path you can apt get it on Ubuntu 16.04.  On Ubuntu 18.04 you can use gdb-multiarch
-    which was installed in step 1.  Just symlink it to `arm-none-eabi-gdb`
+    If you don't have arm-none-eabi-gdb on your path symlink gdb-multiarch to it.
+    It which was installed in step 1.  Just symlink it to `arm-none-eabi-gdb`
 
     ```bash
     sudo ln /usr/bin/gdb-multiarch /usr/bin/arm-none-eabi-gdb
@@ -61,13 +108,15 @@ the virtual environment using the postactivate and predeactivate scripts below.
 Contents of $VIRTUAL_ENV/bin/postactivate
 
 ```sh
-export HALUCINATOR_QEMU=<full path to your qemu>
+  export HALUCINATOR_QEMU_ARM=<HALUCINOTOR_ROOT>/deps/avatar2/targets/build/qemu/arm-softmmu/qemu-system-arm
+  export HALUCINATOR_QEMU_ARM64=<HALUCINOTOR_ROOT>/deps/avatar2/targets/build/qemu/aarch64-softmmu/qemu-system-aarch64
 ```
 
 Contents of $VIRTUAL_ENV/bin/predeactivate
 
 ```sh
-unset HALUCINATOR_QEMU
+unset HALUCINATOR_QEMU_ARM
+unset HALUCINATOR_QEMU_ARM64
 ```
 
 ## Running
@@ -155,13 +204,8 @@ hal_dev_uart -i=1073811456
 In separate terminal start halucinator with the firmware.
 
 ```bash
-<<<<<<< HEAD
-
-<halucinator_repo_root>$ halucinator -c=test/STM32/example/Uart_Hyperterminal_IT_O0_config.yaml \
-=======
 workon halucinator
 <halucinator_repo_root>$./halucinator -c=test/STM32/example/Uart_Hyperterminal_IT_O0_config.yaml \
->>>>>>> 2e7b0cf36731bf347817ef1c5e1685e89bf28059
   -c=test/STM32/example/Uart_Hyperterminal_IT_O0_addrs.yaml \
   -c=test/STM32/example/Uart_Hyperterminal_IT_O0_memory.yaml --log_blocks -n Uart_Example
 
@@ -177,7 +221,7 @@ You will eventually see in both terminals messages containing
 ```
 
 Enter 10 Characters in the first terminal running `hal_dev_uart` press enter
-should then see text echoed followed.
+should then see text echoed followed by.
 
 ```txt
  Example Finished
@@ -250,14 +294,6 @@ symbols:  # Optional, dictionary mapping addresses to symbol names, used to
 options: # Optional, Key:Value pairs you want accessible during emulation
 
 ```
-
-<<<<<<< HEAD
-The symbols in the config can also be specified using one or more symbols files
-passed in using -s. This is a csv file each line defining a symbol as shown below
-
-=======
-Logs are kept in the `tmp/<value of -n option>`. e.g `tmp/Uart_Example/`
-
 ## Config file
 
 How the emulation is performed is controlled by a yaml config file.  It is passed 
@@ -318,7 +354,6 @@ options: # Optional, Key:Value pairs you want accessible during emulation
 The symbols in the config can also be specified using one or more symbols files
 passed in using -s. This is a csv file each line defining a symbol as shown below
 
->>>>>>> 2e7b0cf36731bf347817ef1c5e1685e89bf28059
 ```csv
 symbol_name<str>, start_addr<int>, last_addr<int>
 ```
