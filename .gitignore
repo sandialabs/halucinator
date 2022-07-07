@@ -8,6 +8,7 @@ __pycache__
 
 src/build/
 *.pyc
+deps/**
 test/**/tmp
 **/tmp/**
 *.vscode
