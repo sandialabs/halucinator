@@ -6,9 +6,9 @@ See wiki for instructions for building internal to Sandia
 
 Clone repos into following locations
 ```
-git clone git@github.com/halucinator/halucinator.git
-git clone git@github.com/halucinator/avatar2.git halucinator/deps/avatar2
-git clone git@github.com/halucinator/avatar-qemu.git halucinator/deps/avatar2/targets/src/avatar-qemu
+git clone git@github.com:halucinator/halucinator.git
+git clone git@github.com:halucinator/avatar2.git halucinator/deps/avatar2
+git clone git@github.com:halucinator/avatar-qemu.git halucinator/deps/avatar2/targets/src/avatar-qemu
 ```
 
 Then run 
