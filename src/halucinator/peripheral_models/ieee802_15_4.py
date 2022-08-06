@@ -1,16 +1,16 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
 
 
-from . import peripheral_server
-# from peripheral_server import PeripheralServer, peripheral_model
-from collections import deque, defaultdict
-from .interrupts import Interrupts
 import binascii
-import struct
 import logging
 import time
+from collections import deque
+
+from halucinator.peripheral_models import peripheral_server
+from halucinator.peripheral_models.interrupts import Interrupts
+
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
@@ -19,7 +19,7 @@ log.setLevel(logging.DEBUG)
 @peripheral_server.peripheral_model
 class IEEE802_15_4(object):
 
-    IRQ_NAME = '802_15_4_RX_Frame'
+    IRQ_NAME = "802_15_4_RX_Frame"
     frame_queue = deque()
     calc_crc = True
     rx_frame_isr = None
@@ -39,28 +39,28 @@ class IEEE802_15_4(object):
     @classmethod
     @peripheral_server.tx_msg
     def tx_frame(cls, interface_id, frame):
-        '''
-            Creates the message that Peripheral.tx_msga will send on this 
-            event
-        '''
+        """
+        Creates the message that Peripheral.tx_msga will send on this
+        event
+        """
         print("Sending Frame (%i): " % len(frame), binascii.hexlify(frame))
-        msg = {'frame': frame}
+        msg = {"frame": frame}
         return msg
 
     @classmethod
     @peripheral_server.reg_rx_handler
     def rx_frame(cls, msg):
-        '''
-            Processes reception of this type of message from 
-            PeripheralServer.rx_frame
-        '''
-        frame = msg['frame']
+        """
+        Processes reception of this type of message from
+        PeripheralServer.rx_frame
+        """
+        frame = msg["frame"]
         log.info("Received Frame: %s" % binascii.hexlify(frame))
 
         cls.frame_queue.append(frame)
         cls.frame_time.append(time.time())
         if cls.rx_frame_isr is not None and cls.rx_isr_enabled:
-            Interrupts.trigger_interrupt(cls.rx_frame_isr,  cls.IRQ_NAME)
+            Interrupts.trigger_interrupt(cls.rx_frame_isr, cls.IRQ_NAME)
 
     @classmethod
     def get_first_frame(cls, get_time=False):
@@ -83,9 +83,9 @@ class IEEE802_15_4(object):
 
     @classmethod
     def get_frame_info(cls):
-        '''
-            return number of frames and length of first frame
-        '''
+        """
+        return number of frames and length of first frame
+        """
         queue = cls.frame_queue
         if queue:
             return len(queue), len(queue[0])

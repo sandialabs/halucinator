@@ -1,27 +1,26 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
 
-import radon
-from radon.cli import Config
-import radon.complexity as cc_mod
-from radon.cli.harvest import CCHarvester, RawHarvester
-import math
-import numpy as np
-from tabulate import tabulate
 import csv
 
+import numpy as np
+import radon.complexity as cc_mod
+from radon.cli import Config
+from radon.cli.harvest import CCHarvester, RawHarvester
+from tabulate import tabulate
+
 cc_config = Config(
-    order=getattr(cc_mod, 'SCORE'),
+    order=getattr(cc_mod, "SCORE"),
     no_assert=False,
-    min='A',
-    max='F',
+    min="A",
+    max="F",
     show_complexity=True,
     show_closures=False,
     average=True,
     total_average=False,
-    exclude=['*.pyc'],
-    ignore=[""]
+    exclude=["*.pyc"],
+    ignore=[""],
 )
 
 
@@ -31,29 +30,36 @@ def get_stats(paths):
     cc.run()
     raw.run()
 
-    header = ['Filename', "SLOC", '#Functions', '#Intercepts', 'Max CC',
-              'Ave CC', 'Median CC', 'Min CC']
+    # header = [
+    #     "Filename",
+    #     "SLOC",
+    #     "#Functions",
+    #     "#Intercepts",
+    #     "Max CC",
+    #     "Ave CC",
+    #     "Median CC",
+    #     "Min CC",
+    # ]
     data = {}
     for file_data in cc.results:
         filename, cc_results = file_data
-        complexity = [x.complexity for x in cc_results if hasattr(
-            x, 'is_method') and x.is_method]
+        complexity = [x.complexity for x in cc_results if hasattr(x, "is_method") and x.is_method]
         if len(complexity) > 0:
             print("Getting Complexity for:", filename)
             data[filename] = {}
-            data[filename]['Filename'] = filename
-            data[filename]['Max CC'] = max(complexity)
-            data[filename]['Min CC'] = min(complexity)
-            data[filename]['Med CC'] = np.median(complexity)
-            data[filename]['Ave CC'] = np.mean(complexity)
-            data[filename]['#Functions'] = len(complexity)
+            data[filename]["Filename"] = filename
+            data[filename]["Max CC"] = max(complexity)
+            data[filename]["Min CC"] = min(complexity)
+            data[filename]["Med CC"] = np.median(complexity)
+            data[filename]["Ave CC"] = np.mean(complexity)
+            data[filename]["#Functions"] = len(complexity)
         else:
             print("Skipping ", filename)
 
     for file_data in raw.results:
         filename, results = file_data
         if filename in data:
-            data[filename]['SLOC'] = results['sloc']
+            data[filename]["SLOC"] = results["sloc"]
         else:
             print("Skipping ", filename)
 
@@ -61,7 +67,7 @@ def get_stats(paths):
 
 
 def write_csv(data, header, outfile):
-    with open(outfile, 'wb') as csv_out:
+    with open(outfile, "wb") as csv_out:
         writer = csv.writer(csv_out)
         writer.writerow(header)
         for row in data:
@@ -70,17 +76,15 @@ def write_csv(data, header, outfile):
 
 if __name__ == "__main__":
     from argparse import ArgumentParser
+
     p = ArgumentParser()
-    p.add_argument("-p", "--paths", required=True,
-                   help="Paths to parse")
-    p.add_argument("-o", "--outfile", default='static_stats.csv',
-                   help="File to save results to")
+    p.add_argument("-p", "--paths", required=True, help="Paths to parse")
+    p.add_argument("-o", "--outfile", default="static_stats.csv", help="File to save results to")
 
     args = p.parse_args()
     stats = get_stats(args.paths)
 
-    headers = ['Filename', "SLOC", '#Functions', 'Max CC',
-               'Ave CC', 'Med CC', 'Min CC']
+    headers = ["Filename", "SLOC", "#Functions", "Max CC", "Ave CC", "Med CC", "Min CC"]
     data = []
     for filename, d in list(stats.items()):
         data.append([d[h] for h in headers])  # flip the code and name and sort

@@ -1,0 +1,11 @@
+# .flake8
+
+[flake8]
+
+max-line-length = 100
+#TODO: Take off arm_qemu.py
+exclude = .git,ghidra_scripts/*,doc/*,3rd_party/*,__init__.py,arm_qemu.py
+# W503 line break before binary operator
+# W504 line break after binary operator
+# E203 whitespace before ':'
+ignore = W503,W504,E203

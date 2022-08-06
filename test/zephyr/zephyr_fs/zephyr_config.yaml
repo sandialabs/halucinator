@@ -180,5 +180,3 @@ intercepts:
 - class: halucinator.bp_handlers.IPythonShell
   symbol: UART_ClearStatusFlags
   function: UART_ClearStatusFlags
-
-

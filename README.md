@@ -11,7 +11,7 @@ git clone git@github.com/halucinator/avatar2.git halucinator/deps/avatar2
 git clone git@github.com/halucinator/avatar-qemu.git halucinator/deps/avatar2/targets/src/avatar-qemu
 ```
 
-Then run 
+Then run
 Building the docker will take a long time
 ```
 docker build -t halucinator ./
@@ -24,7 +24,7 @@ In separate terminal run
 ```
 docker exec -it halucinator bash
 #Inside docker container run
-./test/STM32/example/run.sh 
+./test/STM32/example/run.sh
 ```
 
 You will eventually see in both terminals messages containing
@@ -47,8 +47,8 @@ Note:  This has been lightly tested on Ubuntu 18.04 and 20.04
 
 1.  Install dependencies using `./install_deps.sh`
 
-1.  Create and activate a python3 virtual environment (I use virtualmachine 
-    wrapper but it is not required).  You often have to restart you terminal 
+1.  Create and activate a python3 virtual environment (I use virtualmachine
+    wrapper but it is not required).  You often have to restart you terminal
     after installing virutalmachine wrapper for below to work
     ```
        mkvirtualenv -p `which python3` halucinator
@@ -61,7 +61,7 @@ Note:  This has been lightly tested on Ubuntu 18.04 and 20.04
     ```
     Then add to `~/.bashrc` using your favorite editor and then run
     `source ~/.bashrc`.  Replace `your username` in below
-    
+
     ```bash
     export VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3
     export WORKON_HOME=$HOME/.virtualenvs
@@ -75,7 +75,7 @@ Note:  This has been lightly tested on Ubuntu 18.04 and 20.04
     git clone AVATAR_REPO
     cd <repo_root>/avatar2
     pip install -e .
-    
+
 1. Get and build Avatar QEMU
     ```sh
     cd <repo_root>/deps/avatar2/targets/src
@@ -84,7 +84,7 @@ Note:  This has been lightly tested on Ubuntu 18.04 and 20.04
     ./build_qemu.sh
     ```
 
-1.  Install Halucinator 
+1.  Install Halucinator
     Make sure you are in you virtual environment and then run
     ```
     pip install -r src/requirements.txt
@@ -114,13 +114,13 @@ Note:  This has been lightly tested on Ubuntu 18.04 and 20.04
     ```bash
     sudo ln /usr/bin/gdb-multiarch /usr/bin/arm-none-eabi-gdb
     ```
-    
+
 ### Note on setting HALUCINATOR_QEMU
 
-If you use virtualenvwrapper as above you 
+If you use virtualenvwrapper as above you
 can set it up to be automatically set and removed when activating/deactivating
 the virtual environment using the postactivate and predeactivate scripts below.
-  
+
 Contents of $VIRTUAL_ENV/bin/postactivate
 
 ```sh
@@ -137,11 +137,11 @@ unset HALUCINATOR_QEMU_ARM64
 
 ## Running
 
-Running Halucinator requires a configuration file that lists the functions to 
-intercept and the handler to be called on that interception. I usually split 
+Running Halucinator requires a configuration file that lists the functions to
+intercept and the handler to be called on that interception. I usually split
 this config across three files for portability.  The files are a memory file that
 describes the memory layout, an intercept file that describes what to intercept
-and a symbol/address file that maps addresses to symbol names.  See the Config 
+and a symbol/address file that maps addresses to symbol names.  See the Config
 File section below for full details
 
 All of these commands assume you are in your halucinator virtual environment
@@ -159,8 +159,8 @@ This has already been done for Uart example file below.
 A tool to convert the STM's Software Workbench for STM (SW4STM) was developed to
 enable compiling their IDE projects using make.
 This has only been tested on a few STM32F4 examples from STM32Cube_F4_V1.21.0.
-It compiles them as cortex-m3 devices and not cortex-m4 to enable easier 
-emulation in QEMU. 
+It compiles them as cortex-m3 devices and not cortex-m4 to enable easier
+emulation in QEMU.
 
 To use go into the directory below the SW4STM32 directory in the project and run
 `python3 <halucinator_repo_root>/src/tools/stm_tools/build_scripts/CubeMX2Makefile.py .`
@@ -183,11 +183,11 @@ make all
 To give an idea how to use Halucinator an example is provided in `test/STM32/example`.
 
 #### Setup
-Note: This was done prior and the files are in the repo in `test/STM/example`. 
+Note: This was done prior and the files are in the repo in `test/STM/example`.
 If you just want to run the example without building it just go to Running UART Example below.
 
 This procedure should be followed for other binaries.
-In list below after the colon (:) denotes the file/cmd .  
+In list below after the colon (:) denotes the file/cmd .
 
 1. Compile binary as above
 2. Copy binary to a dir of you choice and cd to it:  `test/STM32/example`
@@ -210,7 +210,7 @@ hal_make_addrs -b <path to elf file>
 
 #### Running UART Example
 
-Start the UART Peripheral device,  this a script that will subscribe to the Uart 
+Start the UART Peripheral device,  this a script that will subscribe to the Uart
 on the peripheral server and enable interacting with it.
 
 ```bash
@@ -245,21 +245,21 @@ should then see text echoed followed by.
 
 #### Stopping
 
-Press `ctrl-c`. If for some reason this doesn't work kill it with `ctrl-z` 
+Press `ctrl-c`. If for some reason this doesn't work kill it with `ctrl-z`
 and `kill %`, or `killall -9 halucinator`
 
 Logs are kept in the `tmp/<value of -n option>`. e.g `tmp/Uart_Example/`
 
 ## Config file
 
-How the emulation is performed is controlled by a yaml config file.  It is passed 
+How the emulation is performed is controlled by a yaml config file.  It is passed
 in using the -c flag, which can be repeated with the config files being appended
-and the later files overwriting any collisions from previous file.  The config 
+and the later files overwriting any collisions from previous file.  The config
 is specified as follows.  Default field values are in () and types are in <>
 
 ```yaml
 machine:   # Optional, describes qemu machine used in avatar entry optional
-           # if never specified default settings as show in () below are used. 
+           # if never specified default settings as show in () below are used.
   arch: (cortex-m3)<str>,
   cpu_model: (cortex-m3)<str>,
   entry_addr: (None)<int>,  # Initial value to pc reg. Obtained from 0x0000_0004
@@ -275,10 +275,10 @@ memories:  #List of the memories to add to the machine
   - name: <str>,       # Required
     base_addr:  <int>, # Required
     size: <int>,       # Required
-    perimissions: (rwx)<r--|rw-|r-x>, # Optional 
+    perimissions: (rwx)<r--|rw-|r-x>, # Optional
     file: filename<path>   # Optional Filename to populate memory with, use full path or
                       # path relative to this config file, blank memory used if not specified
-    emulate: class<AvatarPeripheral subclass>    # Class to emulate memory 
+    emulate: class<AvatarPeripheral subclass>    # Class to emulate memory
 
 peripherals:  # Optional, A list of memories, same as memories except emulate field required
 
@@ -286,14 +286,14 @@ intercepts:  # Optional, list of intercepts to place
   - class:  <BPHandler subclass>,  # Required use full import path
     function: <str>     # Required: Function name in @bp_handler([]) used to
                         #   determine class method used to handle this intercept
-    symbol: (Value of function)<str>  # Optional, Symbol name use to determine 
-                                      # address in firmware to intercept, name 
+    symbol: (Value of function)<str>  # Optional, Symbol name use to determine
+                                      # address in firmware to intercept, name
                                       # must be present in symbols,
                                       # If not use value of function is used
     addr: (from symbols)<int>  # Optional, Address of where to place this intercept,
                                # generally recommend not setting this value, but
                                # instead setting symbol and adding entry to
-                               # symbols (in seperate file) as this makes config 
+                               # symbols (in seperate file) as this makes config
                                # files more portable. If set will take precidence over symbol
     class_args: ({})<dict>  # Optional dictionary of args to pass to class's
                        # __init__ method, keys are parameter names
@@ -312,14 +312,14 @@ options: # Optional, Key:Value pairs you want accessible during emulation
 ```
 ## Config file
 
-How the emulation is performed is controlled by a yaml config file.  It is passed 
+How the emulation is performed is controlled by a yaml config file.  It is passed
 in using a the -c flag, which can be repeated with the config file being appended
-and the later files overwriting any collisions from previous file.  The config 
+and the later files overwriting any collisions from previous file.  The config
 is specified as follows.  Default field values are in () and types are in <>
 
 ```yaml
 machine:   # Optional, describes qemu machine used in avatar entry optional defaults in ()
-           # if never specified default settings as below are used. 
+           # if never specified default settings as below are used.
   arch: (cortex-m3)<str>,
   cpu_model: (cortex-m3)<str>,
   entry_addr: (None)<int>,  # Initial value to pc reg. Obtained from 0x0000_0004
@@ -335,10 +335,10 @@ memories:  #List of the memories to add to the machine
   - name: <str>,       # Required
     base_addr:  <int>, # Required
     size: <int>,       # Required
-    perimissions: (rwx)<r--|rw-|r-x>, # Optional 
+    perimissions: (rwx)<r--|rw-|r-x>, # Optional
     file: filename<path>   # Optional Filename to populate memory with, use full path or
                       # path relative to this config file, blank memory used if not specified
-    emulate: class<AvatarPeripheral subclass>    # Class to emulate memory 
+    emulate: class<AvatarPeripheral subclass>    # Class to emulate memory
 
 peripherals:  # Optional, A list of memories, except emulate field required
 

@@ -13,7 +13,7 @@ intercepts:
 
 # -----------------------    Startup ------------------------------------------
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: system_clock_init
 
@@ -65,4 +65,3 @@ intercepts:
 - class: halucinator.bp_handlers.atmel_asf_v3.ethernet_ksz8851.Ksz8851Eth
   function: ksz8851snl_interface_init
 # ----------------------------------------------------------------------------
- 

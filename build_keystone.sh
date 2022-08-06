@@ -10,7 +10,7 @@ if pushd deps/keystone; then
     git pull
     popd
 else
-    git clone https://github.com/keystone-engine/keystone deps/keystone    
+    git clone https://github.com/keystone-engine/keystone deps/keystone
 fi
 
 mkdir -p deps/keystone/build
@@ -24,5 +24,3 @@ SITEPKG=$(python -c "from distutils.sysconfig import get_python_lib; print(get_p
 cp -v ./llvm/lib/libkeystone.so "${SITEPKG}"/keystone/
 
 popd
-
-

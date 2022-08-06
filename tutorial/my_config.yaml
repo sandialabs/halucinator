@@ -24,9 +24,7 @@ intercepts:
 # NOTE:
 # We are going to make HAL_UART_Receive_IT appear to fail by returning -1
 # Comment out below to restore normal receive functionality
-- class: halucinator.bp_handlers.ReturnConstant 
+- class: halucinator.bp_handlers.ReturnConstant
   registration_args: {ret_value: -1}
   function: HAL_UART_Receive_IT
   symbol: HAL_UART_Receive_IT
-
-

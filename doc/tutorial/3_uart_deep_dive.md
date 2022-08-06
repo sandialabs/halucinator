@@ -52,10 +52,10 @@ from ... import hal_log
 hal_log = hal_log.getHalLogger()
 ```
 
-Though out halucinator logging should be setup this way and used instead of print 
+Though out halucinator logging should be setup this way and used instead of print
 for debugging this makes it easy to turn on and off on a per file basis
-using a configuration file.  Generally two logs are used: `log`, which captures stuff  
-relevant to just this file, and `hal_log` which logs things that are of 
+using a configuration file.  Generally two logs are used: `log`, which captures stuff
+relevant to just this file, and `hal_log` which logs things that are of
 interest across halucinator. If in question just use `log`.
 
 It then creates a class that subclasses (`BPHandler`) and assigns `self.model`
@@ -79,30 +79,30 @@ Then it implements the handler for `HAL_UART_Init`
 The decorator `@bp_handler` identifies this method as a bp handler method.
 The decorator takes either no arguments, in which case only one bp_handler per class
 can be implemented or a list of function names.  The function names are valid
-values for the `function` key in the intercept config. Note: for 
+values for the `function` key in the intercept config. Note: for
 historical reasons multiple can be specified but one name should be sufficient.
 
 All `@bp_handlers` methods take as parameters `(self, qemu, bp_addr)`:
 
 * `self`:  The instance of this class
 * `qemu`:  Is a subclass of (Avatar2's qemu target)[https://avatartwo.github.io/avatar2-docs/avatar2.targets.html#module-avatar2.targets.target].  Our subclasses are in `src/halucinator/qemu_targets`
-and abstract binary convention details away. This allows reading and 
+and abstract binary convention details away. This allows reading and
 writing the emulators registers, memory, and control over the emulator
 * `bp_addr`: The address of the break point
 
 The handler returns two values a boolean (`Intercept`) and a number(`Ret_Val`).
-If `Intercept` is `True` the function is intercepted and the function will not 
-be executed in the emulator. `Ret_Val` will be returned for the function's 
+If `Intercept` is `True` the function is intercepted and the function will not
+be executed in the emulator. `Ret_Val` will be returned for the function's
 return value. This makes it appear the function executed and returns `Ret_Val`.
 set `Ret_Val` to `None` if function being intercepted does not return a value.
-If `Intercept` is `False` execution  continues, the function is executed, and 
-`Ret_Val` is ignored. Best practice in this case is to set `Ret_Val` to `None`. 
-Not intercepting execution is useful if you want to monitor 
+If `Intercept` is `False` execution  continues, the function is executed, and
+`Ret_Val` is ignored. Best practice in this case is to set `Ret_Val` to `None`.
+Not intercepting execution is useful if you want to monitor
 the execution of a function but still allow it to execute.
 
 Looking back at the `HAL_UART_Init` bp handler, you should now see that it logs
-the call to the function, prevents the function from executing and returns 0. 
-Zero is `HAL_OK`, thus execution continues with the firmware behaving as if the 
+the call to the function, prevents the function from executing and returns 0.
+Zero is `HAL_OK`, thus execution continues with the firmware behaving as if the
 UART was initialized correctly.
 
 Similarly the `HAL_UART_GetState` bp handler just returns `0x20`, the value
@@ -116,7 +116,7 @@ have the following prototype.
 HAL_StatusTypeDef HAL_UART_Transmit(UART_HandleTypeDef *huart, uint8_t *pData, uint16_t Size);
 ```
 
-* `huart`  is a pointer to a struct that captures UART specific details.  Most 
+* `huart`  is a pointer to a struct that captures UART specific details.  Most
 important is the first entry in the struct is a pointer to the hardware address
 that identifies which UART is used.
 * `pData`  pointer to the buffer of data to transmit
@@ -128,7 +128,7 @@ Below is the handler used to replace execution of this function in halucinator.
     @bp_handler(['HAL_UART_Transmit', 'HAL_UART_Transmit_IT', 'HAL_UART_Transmit_DMA'])
     def handle_tx(self, qemu, bp_addr):
         '''
-            Reads the frame out of the emulated device, returns it and an 
+            Reads the frame out of the emulated device, returns it and an
             id for the interface(id used if there are multiple ethernet devices)
         '''
         huart = qemu.get_arg(0)
@@ -143,16 +143,16 @@ Below is the handler used to replace execution of this function in halucinator.
 
 You can see it gets the `huart` pointer from arg 0 and dereferences it by reading
 memory at that location to get the hardware address.  It then gets the `buf_addr`
-from arg 1, and `buf_len` from arg 2, and reads the buffer from memory. It logs 
+from arg 1, and `buf_len` from arg 2, and reads the buffer from memory. It logs
 the data, and writes it to the model, using the hardware as the id for message.
 
-Receiving data works in a similar manner.  The firmware calls 
+Receiving data works in a similar manner.  The firmware calls
 `HAL_UART_Receive_IT` which has the same c prototype as it's transmit counter part.
 Which gets intercepted and handled by the `handle_rx` method below.  The handler
 gets the hardware address and size, then calls the model to get data, blocking until
 it has arrived.  It then writes the data to the buffer in the firmware's memory.
 The handler then return's `True, 0` causing the `HAL_UART_Receive_IT` execution
-to be skipped, and appear like it executed and returned 0 (`HAL_OK`).  
+to be skipped, and appear like it executed and returned 0 (`HAL_OK`).
 
 ```python
     @bp_handler(['HAL_UART_Receive', 'HAL_UART_Receive_IT', 'HAL_UART_Receive_DMA'])
@@ -180,10 +180,10 @@ bytes is implemented in the peripheral model. By abstracting the device we
 reduce the amount of work to implement each HAL.
 
 
-The UART Peripheral model is found in 
+The UART Peripheral model is found in
 `~/halucinator/src/halucinator/peripheral_models/uart.py`
 
-Prior to this creation of the class you will notice that is sets up logging 
+Prior to this creation of the class you will notice that is sets up logging
 like the UART BP handler.
 
 Now looking at the creation of the class.
@@ -202,7 +202,7 @@ this is because these classes are never instantiated.  As a result, any state
 such as the receive buffers (`rx_buffers`) need to be saved at the class level.
 
 There are four methods in this class `write`, `read`, `read_line`, `rx_data`. We will look
-at `write` and `rx_data` first then discuss the read methods. 
+at `write` and `rx_data` first then discuss the read methods.
 The write method is below.
 
 ```python
@@ -220,11 +220,11 @@ The write method is below.
 Notice the `write` method is decorated with the `@classmethod` and `@peripheral_server.tx_msg`
 The `@peripheral_server.tx_msg` decorator makes it so this method's return
 value is serialized and published by the peripheral server with topic
-`Peripheral.<ClassName>.<method_name>`.  
+`Peripheral.<ClassName>.<method_name>`.
 `write` takes an identifier, and the data (`chars`) as parameters and puts these
 in a dictionary and returns the dictionary (`msg`).  Thus, the dictionary is published by the peripheral
-server under the topic `Peripheral.UARTPublisher.write`.  As you will see later, 
-our external devices `hal_dev_uart` subscribes to this topic and prints out 
+server under the topic `Peripheral.UARTPublisher.write`.  As you will see later,
+our external devices `hal_dev_uart` subscribes to this topic and prints out
 what it receives.
 
 Now lets look at the `rx_data` method.
@@ -243,17 +243,17 @@ Now lets look at the `rx_data` method.
 ```
 
 This method is decorated with the `@peripheral_server.reg_rx_handler` decorator.
-When used on a method this registers this method as the handler for topics 
+When used on a method this registers this method as the handler for topics
 sent to the peripheral server with topic `Peripheral.<ClassName>.<method_name>.`
 So this method will receive all traffic sent to topic `Peripheral.UARTPublisher.rx_data`.
 In this case the msg received is a dictionary with keys `id`, and `chars`,
 matching those send by `write`.  It saves `chars` to a dictionary of deques (a stack)
 with the deque used being selected by the id.  By saving it to the deque
-we make receiving data asynchronous from the firmware's execution of it's UART 
+we make receiving data asynchronous from the firmware's execution of it's UART
 receive function that gets the data.
 
-Recall that the model's `read` function was called by the bp handler for 
-`HAL_UART_Receive_IT`. Let look at what it does.  
+Recall that the model's `read` function was called by the bp handler for
+`HAL_UART_Receive_IT`. Let look at what it does.
 
 ```python
     @classmethod
@@ -289,12 +289,12 @@ It takes in:
 * `count`: Number of bytes to read.
 * `block` a boolean that sets if this method should block if data is not available
 
-If `block` is `True` this method will wait in a 
-loop until `count` bytes are available in `rx_buffers` for the given 
-`uart_id`.  When data is available it reads out all 
+If `block` is `True` this method will wait in a
+loop until `count` bytes are available in `rx_buffers` for the given
+`uart_id`.  When data is available it reads out all
 available data up to `count` bytes and returns them.  If `block` is `False`
-it will return as many characters that are currently available -- including 
-zero -- up to `count`.  
+it will return as many characters that are currently available -- including
+zero -- up to `count`.
 
 The `read_line` method works similar to `read` except it reads until `\n` is
 found before returning data.
@@ -303,14 +303,14 @@ You should now understand how halucinator executes firmware, intercepts function
 executes bp handlers to replace those functions, and sends and receives data
 using the peripheral server.
 
-We will now look at how an external devices communicates with the peripheral 
+We will now look at how an external devices communicates with the peripheral
 server.
 
 ## External Devices
 
-For this we will look at the `hal_dev_uart` command works.  This is actually 
-an entry point setup when we installed halucinator that calls 
-`src/halucinator/external_devices/uart.py`'s `main` function.  Lets look at it.  
+For this we will look at the `hal_dev_uart` command works.  This is actually
+an entry point setup when we installed halucinator that calls
+`src/halucinator/external_devices/uart.py`'s `main` function.  Lets look at it.
 `main` is located at the end of the file.
 
 ```python
@@ -336,7 +336,7 @@ unless you are running multiple instance of halucinator.
 The `-r`, `-t` select ports used to receive and transmit data with the halucinator
 peripheral server.  The `-i` specifies the uart id to interact with.  It must match
 the `id` key in the msg sent by the uart peripheral handler for data to be received
-inside halucinator. `-n` will append a new line character to data entered in. 
+inside halucinator. `-n` will append a new line character to data entered in.
 
 Moving down `main`
 
@@ -348,14 +348,14 @@ Moving down `main`
 ```
 
 Next we instantiate an `IOServer`.  This is a helper class that handles the
-zero mq communication with halucinator and creates threads need to communicate 
-asynchronous with it. We won't cover it in this tutorial, but refer you to 
-its source `src/halucinator/external_devices/io.server.py` for more info. 
+zero mq communication with halucinator and creates threads need to communicate
+asynchronous with it. We won't cover it in this tutorial, but refer you to
+its source `src/halucinator/external_devices/io.server.py` for more info.
 `main` then instantiates a `UartPrintServer` class passing the `IOServer`as an
 argument, and starts the `IOServer`.
 
 We then enter a `while(1)` loop that reads input from the terminal and
-uses `uart` to send it.  A KeyboardInterrupt 
+uses `uart` to send it.  A KeyboardInterrupt
 (e.g., pressing `Ctrl c`) or an empty input will exit the loop. After
 which the `IOServer` is stopped and the program exits.
 
@@ -409,6 +409,6 @@ as the topic.
 ## Conclusion
 
 You should now understand the code that halucinator executes when it calls
-the HAL functions to send and receive data, and how that data gets into and 
+the HAL functions to send and receive data, and how that data gets into and
 out of halucinator.  In the next tutorial, we will implement new bp handlers,
 peripheral model, and external device. [4_extending_deep_dive.md](4_extending_deep_dive.md)

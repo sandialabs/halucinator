@@ -1,62 +1,24 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
-from os import path, system
-from ..bp_handler import BPHandler, bp_handler
-from ..intercepts import register_bp_handler
-import IPython
 import logging
+from os import system
+
+import IPython
+
+from halucinator.bp_handlers.bp_handler import BPHandler, bp_handler
+
 log = logging.getLogger(__name__)
-
-# class IPythonShell(BPHandler):
-#     '''
-#         Drops into an IPythonShell for the breakpoint handler
-
-#         - class: halucinator.bp_handlers.IPythonShell
-#           function: <func_name> (Can be anything)
-#           addr: <addr>
-#     '''
-
-#     def __init__(self):
-#         self.addr2name = {}
-
-#     def register_handler(self, qemu, addr, func_name):
-#         self.addr2name[addr] = func_name
-#         return IPythonShell.get_value
-
-#     @bp_handler
-#     def get_value(self, target, addr):
-#         '''
-#             Gets the counter value
-#         '''
-
-#         log.warning("In Debug: %s" % self.addr2name[addr])
-#         print("Execute self.print_help for options")
-#         # qemu.write_bx_lr(qemu.regs.pc)
-#         ret_val = None
-#         self.print_helpers()
-#         system('stty sane')  # Make so display works
-#         IPython.embed()
-
-#         # return intercept, ret_val
-#         return False, ret_val
-
-#     def print_helpers(self):
-#         print("Available Debug Helpers:")
-#         print("    CortexMDebugHelper(target)")
-
-
-
 
 
 class IPythonShell(BPHandler):
-    '''
-        Drops into an IPythonShell for the breakpoint handler
+    """
+    Drops into an IPythonShell for the breakpoint handler
 
-        - class: halucinator.bp_handlers.IPythonShell
-          function: <func_name> (Can be anything)
-          addr: <addr>
-    '''
+    - class: halucinator.bp_handlers.IPythonShell
+      function: <func_name> (Can be anything)
+      addr: <addr>
+    """
 
     def __init__(self):
         self.addr2name = {}
@@ -67,21 +29,19 @@ class IPythonShell(BPHandler):
 
     @bp_handler
     def get_value(self, target, addr):
-        '''
-            Gets the counter value
-        '''
+        """
+        Gets the counter value
+        """
 
         log.warning("In Debug: %s" % self.addr2name[addr])
         print("Execute self.print_helpers for options")
-        # qemu.write_bx_lr(qemu.regs.pc)
         ret_val = None
         self.print_helpers()
-        system('stty sane')  # Make so display works
+        system("stty sane")  # Make so display works
         print("In function: %s" % (self.addr2name[addr]))
         print("You can look up a symbol using target.avatar.config.get_symbol_name(addr)")
         IPython.embed()
 
-        # return intercept, ret_val
         return False, ret_val
 
     def print_helpers(self):
@@ -92,7 +52,8 @@ class IPythonShell(BPHandler):
 BFAR = 0xE000ED38
 MMAR = 0xE000ED34
 
-class CortexMDebugHelper():
+
+class CortexMDebugHelper:
     def __init__(self, qemu):
         self.qemu = qemu
 
@@ -105,20 +66,20 @@ class CortexMDebugHelper():
         if cfsr & (1 << 7):
             print("\tMemManage Fault Address Valid: 0x%x" % self.get_mem(MMAR))
         if cfsr & (1 << 5):
-            print(
-                "\tMemManage fault occurred during floating-point lazy state preservation")
+            print("\tMemManage fault occurred during floating-point lazy state preservation")
         if cfsr & (1 << 4):
-            print(
-                "\tStacking for an exception entry has caused one or more access violations")
+            print("\tStacking for an exception entry has caused one or more access violations")
         if cfsr & (1 << 3):
-            print(
-                "\tUnstacking for an exception return has caused one or more access violations")
+            print("\tUnstacking for an exception return has caused one or more access violations")
         if cfsr & (1 << 1):
-            print("\tData Access, Stacked PC 0x%x, Faulting Addr 0x%x" % (
-                self.get_stacked_pc(sp_offset), self.get_mem(MMAR)))
+            print(
+                "\tData Access, Stacked PC 0x%x, Faulting Addr 0x%x"
+                % (self.get_stacked_pc(sp_offset), self.get_mem(MMAR))
+            )
         if cfsr & (1):
-            print("\tInstruction Access Violation, Stacked PC 0x%x" %
-                  (self.get_stacked_pc(sp_offset)))
+            print(
+                "\tInstruction Access Violation, Stacked PC 0x%x" % (self.get_stacked_pc(sp_offset))
+            )
         print("BusFault:")
         if cfsr & (1 << 15):
             print("\t Bus Fault Addr Valid 0x%x" % self.get_mem(BFAR))
@@ -131,47 +92,46 @@ class CortexMDebugHelper():
         if cfsr & (1 << 10):
             print("\tImprecise data bus error, may not have location")
         if cfsr & (1 << 9):
-            print("\tPrecise data bus error, Faulting Addr: %0x" %
-                  self.get_mem(BFAR))
+            print("\tPrecise data bus error, Faulting Addr: %0x" % self.get_mem(BFAR))
         if cfsr & (1 << 8):
             print("\tInstruction bus error")
 
         print("Other Faults")
-        if cfsr & (1 << (9+16)):
+        if cfsr & (1 << (9 + 16)):
             print("\tDiv by zero, Stacked PC has Addr")
-        if cfsr & (1 << (8+16)):
+        if cfsr & (1 << (8 + 16)):
             print("\tUnaligned Fault Stacking fault")
-        if cfsr & (1 << (3+16)):
+        if cfsr & (1 << (3 + 16)):
             print("\tNo Coprocessor")
-        if cfsr & (1 << (2+16)):
+        if cfsr & (1 << (2 + 16)):
             print("\tInvalid PC load UsageFault, Stacked PC has Addr")
-        if cfsr & (1 << (1+16)):
+        if cfsr & (1 << (1 + 16)):
             print("\tInvalid state UsageFault, Stacked PC has Addr")
         if cfsr & (1 << (16)):
             print("\tUndefined instruction UsageFault, Stacked PC has Addr")
 
     def print_exception_stack(self, offset=0):
-        '''
-            Prints registers pushed on the stack by exception entry
-        '''
+        """
+        Prints registers pushed on the stack by exception entry
+        """
         #  http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0553a/Babefdjc.html
         sp = self.qemu.regs.sp
         sp += offset
         print("Registers Stacked by Exception")
         print("R0: 0x%08x" % self.get_mem(sp))
-        print("R1: 0x%08x" % self.get_mem(sp+4))
-        print("R2: 0x%08x" % self.get_mem(sp+8))
-        print("R3: 0x%08x" % self.get_mem(sp+12))
-        print("R12: 0x%08x" % self.get_mem(sp+16))
-        print("LR: 0x%08x" % self.get_mem(sp+20))
-        print("PC: 0x%08x" % self.get_mem(sp+24))
-        print("xPSR: 0x%08x" % self.get_mem(sp+28))
+        print("R1: 0x%08x" % self.get_mem(sp + 4))
+        print("R2: 0x%08x" % self.get_mem(sp + 8))
+        print("R3: 0x%08x" % self.get_mem(sp + 12))
+        print("R12: 0x%08x" % self.get_mem(sp + 16))
+        print("LR: 0x%08x" % self.get_mem(sp + 20))
+        print("PC: 0x%08x" % self.get_mem(sp + 24))
+        print("xPSR: 0x%08x" % self.get_mem(sp + 28))
         # TODO Check CCR for floating point and print S0-S15 FPSCR
 
     def print_hardfault_info(self, stack_offset=0):
-        '''
-            Prints Hardfault info, alias for print_hardfault_info
-        '''
+        """
+        Prints Hardfault info, alias for print_hardfault_info
+        """
         print("Configurable Fault Status Reg")
         hardfault_status = self.get_mem(0xE000ED2C)
         self.print_exception_stack(stack_offset)
@@ -181,22 +141,22 @@ class CortexMDebugHelper():
         self.parse_cfsr(cfsr, stack_offset)
 
     def hf(self, stack_offset=0):
-        '''
-            Prints Hardfault info, alias for print_hardfault_info
-        '''
+        """
+        Prints Hardfault info, alias for print_hardfault_info
+        """
         self.print_hardfault_info(stack_offset)
 
     def get_stacked_pc(self, stackoffset=0):
-        '''
-            Gets the PC pushed on the stack from in an ISR
-            Offset can be used adjust if additional things have been
-            pushed to stack
-        '''
+        """
+        Gets the PC pushed on the stack from in an ISR
+        Offset can be used adjust if additional things have been
+        pushed to stack
+        """
         sp = self.qemu.regs.sp
-        return self.get_mem(sp+(4*6)+stackoffset)
+        return self.get_mem(sp + (4 * 6) + stackoffset)
 
     def parse_hardfault(self, hardfault, sp_offset):
-        print("Hard Fault 0x%x Reason: " % hardfault, end=' ')
+        print("Hard Fault 0x%x Reason: " % hardfault, end=" ")
         if hardfault & (1 << 30):
             print("Forced--Other fault elavated")
         if hardfault & (1 << 1):

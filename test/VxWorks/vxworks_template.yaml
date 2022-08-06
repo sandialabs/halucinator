@@ -22,7 +22,7 @@ intercepts:
 # Boot
 # =====================================================
 
-  # Set Boot Line 
+  # Set Boot Line
   - class: halucinator.bp_handlers.vxworks.boot.Boot
     registration_args: {bootline: <BOARD_SPECIFIC>}
     function: bootStringToStruct
@@ -33,54 +33,89 @@ intercepts:
 # ================================================
 
   # This class required defining the parameters for the ttyDev interfaces
-  # name(key):     come from calls to iosDevAdd, which must also be intercepted(see DOSFS section) 
+  # name(key):     come from calls to iosDevAdd, which must also be intercepted(see DOSFS section)
   # irq_num:       the irq number passed to intConnect
   # enabled:       controls if the interrupt is by default enabled
   # ird:           name of the method to call to provide a character usually tyIRd
   # use_rx_task:   whether to directly call tyIRd or give to a semaphore to release a task
 
   - class: halucinator.bp_handlers.vxworks.ty_dev.TYDev
-    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. /tyCo/0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x2), enabled: true}, 
-                              <BOARD_SPECIFIC>(e.g. /tyCo/1): {irq_num: <BOARD_SPECIFIC>(e.g. 0x3), enabled: true}, 
-                 ird: tyIRd, use_rx_task: false }
+    class_args:
+      interfaces:
+        <BOARD_SPECIFIC>(e.g. /tyCo/0):
+          irq_num: <BOARD_SPECIFIC>(e.g. 0x2),
+          enabled: true
+        <BOARD_SPECIFIC>(e.g. /tyCo/1):
+          irq_num: <BOARD_SPECIFIC>(e.g. 0x3),
+          enabled: true
+        ird: tyIRd,
+        use_rx_task: false
     function: tyISR
     symbol: <BOARD_SPECIFIC>tyISR  #Name of ISR usually given to intConnect
-  
+
     # Only used if use_rx_task is used
   - class: halucinator.bp_handlers.vxworks.ty_dev.TYDev
-    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. /tyCo/0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x2), enabled: true}, 
-                              <BOARD_SPECIFIC>(e.g. /tyCo/1): {irq_num: <BOARD_SPECIFIC>(e.g. 0x3), enabled: true}, 
-                 ird: tyIRd, use_rx_task: false }
+    class_args:
+      interfaces:
+        <BOARD_SPECIFIC>(e.g. /tyCo/0):
+          irq_num: <BOARD_SPECIFIC>(e.g. 0x2),
+          enabled: true
+        <BOARD_SPECIFIC>(e.g. /tyCo/1):
+          irq_num: <BOARD_SPECIFIC>(e.g. 0x3),
+          enabled: true
+        ird: tyIRd,
+        use_rx_task: false
     function: rxTask
     symbol: <BOARD_SPECIFIC>rxTaskReceiveMethod or
     addr:   <BOARD_SPECIFIC>
 
   - class: halucinator.bp_handlers.vxworks.ty_dev.TYDev
-    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. /tyCo/0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x2), enabled: true}, 
-                              <BOARD_SPECIFIC>(e.g. /tyCo/1): {irq_num: <BOARD_SPECIFIC>(e.g. 0x3), enabled: true}, 
-                 ird: tyIRd, use_rx_task: false }
+    class_args:
+      interfaces:
+        <BOARD_SPECIFIC>(e.g. /tyCo/0):
+          irq_num: <BOARD_SPECIFIC>(e.g. 0x2),
+          enabled: true
+        <BOARD_SPECIFIC>(e.g. /tyCo/1):
+          irq_num: <BOARD_SPECIFIC>(e.g. 0x3),
+          enabled: true
+        ird: tyIRd,
+        use_rx_task: false
     function: tyRead
     symbol: tyRead
 
   - class: halucinator.bp_handlers.vxworks.ty_dev.TYDev
-    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. /tyCo/0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x2), enabled: true}, 
-                              <BOARD_SPECIFIC>(e.g. /tyCo/1): {irq_num: <BOARD_SPECIFIC>(e.g. 0x3), enabled: true}, 
-                 ird: tyIRd, use_rx_task: false }
+    class_args:
+      interfaces:
+        <BOARD_SPECIFIC>(e.g. /tyCo/0):
+          irq_num: <BOARD_SPECIFIC>(e.g. 0x2),
+          enabled: true
+        <BOARD_SPECIFIC>(e.g. /tyCo/1):
+          irq_num: <BOARD_SPECIFIC>(e.g. 0x3),
+          enabled: true
+        ird: tyIRd,
+        use_rx_task: false
     function: tyWrite
     symbol: tyWrite
-  
+
   - class: halucinator.bp_handlers.vxworks.ty_dev.TYDev
-    class_args: {interfaces: {<BOARD_SPECIFIC>(e.g. /tyCo/0): {irq_num: <BOARD_SPECIFIC>(e.g. 0x2), enabled: true}, 
-                              <BOARD_SPECIFIC>(e.g. /tyCo/1): {irq_num: <BOARD_SPECIFIC>(e.g. 0x3), enabled: true}, 
-                 ird: tyIRd, use_rx_task: false }
+    class_args:
+      interfaces:
+        <BOARD_SPECIFIC>(e.g. /tyCo/0):
+          irq_num: <BOARD_SPECIFIC>(e.g. 0x2),
+          enabled: true
+        <BOARD_SPECIFIC>(e.g. /tyCo/1):
+          irq_num: <BOARD_SPECIFIC>(e.g. 0x3),
+          enabled: true
+        ird: tyIRd,
+        use_rx_task: false
     function: tyIoctl
     symbol: tyIoctl
 
 # =================================================================
 # SysClock
 # =================================================================
-  
-  # Sets up timer to trigger interrupt which causes the scheduler 
+
+  # Sets up timer to trigger interrupt which causes the scheduler
   # to execute irq_num comes from call to intConnect
   - class: halucinator.bp_handlers.vxworks.sys_clock.SysClock
     class_args: {irq_num: <BOARD_SPECIFIC>10, rate: 1, scale: 1000}
@@ -113,8 +148,8 @@ intercepts:
 # =======================================================
 
   # Most the board specific functions for the DOS FS can
-  # are in the given as parameters to iosDrvInstall for 
-  # DOSFS 
+  # are in the given as parameters to iosDrvInstall for
+  # DOSFS
 
   - class: halucinator.bp_handlers.vxworks.ios_dev.IosDev
     function: iosDevAdd
@@ -143,7 +178,7 @@ intercepts:
   - class: halucinator.bp_handlers.vxworks.dos_fs.DosFsLib
     function: write
     symbol: <BOARD_SPECIFIC>Write
-  
+
   - class: halucinator.bp_handlers.vxworks.dos_fs.DosFsLib
     function: ioctl
     symbol: <BOARD_SPECIFIC>Ioctl
@@ -154,7 +189,7 @@ intercepts:
 
 # This class required defining the parameters for the Ethernet interfaces
 # name(key):     come from calls to iosDevAdd, which must also be intercepted(see DOSFS section)
-#                                 
+#
 # irq_num:       the irq number passed to intConnect
 # enabled:       controls if the interrupt is by default enabled
 # ird:           name of the method to call to provide a character usually tyIRd
@@ -175,7 +210,7 @@ intercepts:
     class_args: {interfaces: {eth0: {irq_num: <BOARD_SPECIFIC>0x19, enabled: false}}}
     function: xSend
     symbol: <BOARD_SPECIFIC>eth_Send
-  
+
   - class: halucinator.bp_handlers.vxworks.ethernet.Ethernet
     class_args: {interfaces: {eth0: {irq_num: <BOARD_SPECIFIC>0x19, enabled: false}}}
     function: xStart
@@ -185,5 +220,3 @@ intercepts:
     class_args: {interfaces: {eth0: {irq_num: <BOARD_SPECIFIC>0x19, enabled: false}}}
     function: xIoctl
     symbol: <BOARD_SPECIFIC>eth_Ioctl
-
-

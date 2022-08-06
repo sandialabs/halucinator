@@ -31,4 +31,3 @@ Begin tests...
   F 0 writeOnlyTest
 End of files
 All tests complete.
-

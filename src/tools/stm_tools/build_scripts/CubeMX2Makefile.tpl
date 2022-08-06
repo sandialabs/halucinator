@@ -49,9 +49,9 @@ $C_INCLUDES
 
 C_INCLUDES += -I$GCC_PATH/arm-none-eabi/include
 
-ASFLAGS = $MCU -mfloat-abi=$FLOAT_ABI $$(AS_DEFS) $$(AS_INCLUDES) $$(OPT) -Wall 
-CFLAGS = $MCU -mfloat-abi=$FLOAT_ABI $$(C_DEFS) $$(C_INCLUDES) -$$(OPT) 
-CFLAGS += -g3 -Wall -ffunction-sections -c -fmessage-length=0 -Wno-unused-variable -Wno-pointer-sign -mthumb -specs=nosys.specs 
+ASFLAGS = $MCU -mfloat-abi=$FLOAT_ABI $$(AS_DEFS) $$(AS_INCLUDES) $$(OPT) -Wall
+CFLAGS = $MCU -mfloat-abi=$FLOAT_ABI $$(C_DEFS) $$(C_INCLUDES) -$$(OPT)
+CFLAGS += -g3 -Wall -ffunction-sections -c -fmessage-length=0 -Wno-unused-variable -Wno-pointer-sign -mthumb -specs=nosys.specs
 CFLAGS += -Wno-main -Wno-format -Wno-address -Wno-unused-but-set-variable -Wno-strict-aliasing -Wno-parentheses -Wno-missing-braces
 ifeq ($$(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -86,7 +86,7 @@ TARGET=$$(APP_NAME)--opt=$$(OPT)--comp=$$(CC)--comp_version=$$(COMP_VERSION)
 BUILD_DIR = .build/$$(TARGET)
 BIN_DIR = bin
 
-all: default 
+all: default
 
 default: $$(BIN_DIR) $$(BIN_DIR)/$$(TARGET).elf
 

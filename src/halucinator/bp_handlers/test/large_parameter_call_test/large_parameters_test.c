@@ -1,5 +1,5 @@
-# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, 
+# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS,
 # the U.S. Government retains certain rights in this software.
 
 void run_test(){
@@ -18,15 +18,15 @@ int test_end(){
 Will use halucinator to create a call to this
 */
 int four_parameters(int one, int two, int three, int four){
-    
+
     write_int(one);
     write_int(two);
     write_int(three);
     write_int(four);
 }
 
-/* 
-Will use halucinator call function to create a call to this 
+/*
+Will use halucinator call function to create a call to this
 test five parameters
 */
 int five_parameters(int one, int two, int three, int four, int five){
@@ -38,11 +38,11 @@ int five_parameters(int one, int two, int three, int four, int five){
 }
 
 
-/* 
-Will use halucinator call function to create a call to this 
+/*
+Will use halucinator call function to create a call to this
 test 10 parameters
 */
-int ten_parameters(int one, int two, int three, int four, int five, 
+int ten_parameters(int one, int two, int three, int four, int five,
                    int six, int seven, int eight, int nine, int ten){
     write_int(one);
     write_int(two);

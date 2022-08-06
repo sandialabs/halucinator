@@ -4,7 +4,7 @@
 echo "Please See README.md for instructions"
 exit
 
-set -e 
+set -e
 set -x
 sudo apt install -y ethtool python-tk gdb-multiarch tcpdump
 
@@ -51,7 +51,7 @@ if pushd deps/avatar2; then
     git pull
     popd
 else
-    git clone  "$AVATAR_REPO" deps/avatar2    
+    git clone  "$AVATAR_REPO" deps/avatar2
 fi
 
 pushd deps/avatar2

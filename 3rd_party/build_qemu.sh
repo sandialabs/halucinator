@@ -15,8 +15,7 @@ then
     git clone https://github.com/avatartwo/avatar-qemu.git avatar-qemu
 fi
 cd avatar-qemu
-git submodule update --init --recursive 
+git submodule update --init --recursive
 
 ./configure --disable-sdl --target-list=arm-softmmu
 make -j4
-

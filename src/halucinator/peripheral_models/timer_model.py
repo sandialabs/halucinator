@@ -1,15 +1,14 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
 
-from . import peripheral_server
-from collections import deque, defaultdict
-from .interrupts import Interrupts
-from threading import Thread, Event
 import logging
-import time
-log = logging.getLogger(__name__)
+from threading import Event, Thread
 
+from halucinator.peripheral_models import peripheral_server
+from halucinator.peripheral_models.interrupts import Interrupts
+
+log = logging.getLogger(__name__)
 
 
 # Register the pub/sub calls and methods that need mapped
@@ -17,6 +16,7 @@ log = logging.getLogger(__name__)
 class TimerModel(object):
 
     active_timers = {}
+
     @classmethod
     def start_timer(cls, name, isr_num, rate):
         log.debug("Starting timer: %s" % name)

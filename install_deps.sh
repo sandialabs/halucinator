@@ -1,6 +1,6 @@
 #!/bin/bash
 # . /etc/bash_completion
-set -e 
+set -e
 #set -x
 sudo apt-get install -y ethtool python-tk gdb-multiarch tcpdump python3-pip \
                         python3-venv cmake g++ build-essential libpixman-1-dev
@@ -13,7 +13,7 @@ sudo pip3 install virtualenv virtualenvwrapper
 
 # # Activate the virtual environment (workon doesn't work in the script)
 # echo "================================================"
-# echo "$VIRT_ENV virt environment created now run:" 
+# echo "$VIRT_ENV virt environment created now run:"
 # echo ""
 # echo "source ~/.virtualenvs/$VIRT_ENV/bin/activate"
 # echo "./setup.sh"

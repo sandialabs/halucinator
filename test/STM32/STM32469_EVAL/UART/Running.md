@@ -1,6 +1,6 @@
 # Running Uart Examples
 
-For all two terminals are needed in one run.  All commands should be run 
+For all two terminals are needed in one run.  All commands should be run
 from the repo root
 
 ```sh
@@ -34,4 +34,3 @@ python -m halucinator.external_devices.uart -i=1073811456
 ## UART_Hypertermincal_DMA
 
 Currently broken
-

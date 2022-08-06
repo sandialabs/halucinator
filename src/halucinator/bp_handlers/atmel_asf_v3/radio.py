@@ -1,17 +1,15 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
 
 
-from ...peripheral_models.ieee802_15_4 import IEEE802_15_4
-from ..intercepts import tx_map, rx_map
-from ..bp_handler import BPHandler, bp_handler
-from collections import defaultdict, deque
-import struct
-import binascii
-import os
 import logging
 import time
+from collections import defaultdict
+
+from halucinator.bp_handlers.bp_handler import BPHandler, bp_handler
+from halucinator.peripheral_models.ieee802_15_4 import IEEE802_15_4
+
 log = logging.getLogger(__name__)
 
 
@@ -19,7 +17,7 @@ log = logging.getLogger(__name__)
 REG_TRX_STATUS = 0x01
 REG_TRX_STATE = 0x02
 REG_TRX_CTRL_1 = 0x04  # Default = 0x22
-REG_PART_NUM = 0x1C    # Reset 0x0B
+REG_PART_NUM = 0x1C  # Reset 0x0B
 REG_VERSION_NUM = 0x1D  # Reset 0x02
 REG_MAN_ID_0 = 0x1E  # 0x1F
 REG_MAN_ID_1 = 0x1F  # 0x00
@@ -44,7 +42,7 @@ TRX_STATUS_BUSY_RX = 0x01
 TRX_STATUS_RX_ON = 0x06
 TRX_STATUS_TRX_OFF = 0x08
 TRX_STATUS_TX_ON = 0x09
-TRX_STATUS_SLEEP = 0x0f
+TRX_STATUS_SLEEP = 0x0F
 TRX_STATUS_PREP_DEEP_SLEEP = 0x10
 TRX_STATUS_BUSY_RX_AACK = 0x11
 TRX_STATUS_BUSY_TX_ARET = 0x12
@@ -68,16 +66,16 @@ class SAMR21Radio(BPHandler):
         self.last_rx_time = time.time()
 
     def get_id(self, qemu):
-        return 'SAMR21Radio'
+        return "SAMR21Radio"
 
-    @bp_handler(['trx_reg_read'])
+    @bp_handler(["trx_reg_read"])
     def read_reg(self, qemu, bp_addr):
         # uint8_t trx_reg_read(uint8_t addr);
         reg = qemu.regs.r0
         # log.debug("Reading Reg %s from pc:%s" % (hex(reg),hex(qemu.regs.lr)))
         return True, self.regs[reg]
 
-    @bp_handler(['trx_reg_write'])
+    @bp_handler(["trx_reg_write"])
     def write_reg(self, qemu, bp_addr):
         # void trx_reg_write(uint8_t addr, uint8_t data);
         reg = qemu.regs.r0
@@ -88,14 +86,14 @@ class SAMR21Radio(BPHandler):
 
         return True, None
 
-    @bp_handler(['trx_bit_read'])
+    @bp_handler(["trx_bit_read"])
     def read_bit(self, qemu, bp_addr):
         # uint8_t trx_bit_read(uint8_t addr, uint8_t mask, uint8_t pos);
         reg = qemu.regs.r0
         log.debug("Read Bit %s from pc:%s" % (hex(reg), hex(qemu.regs.lr)))
         return True, None
 
-    @bp_handler(['trx_bit_write'])
+    @bp_handler(["trx_bit_write"])
     def write_bit(self, qemu, bp_addr):
         # void trx_bit_write(uint8_t reg_addr, uint8_t mask, uint8_t pos,
         # 		uint8_t new_value);
@@ -103,7 +101,7 @@ class SAMR21Radio(BPHandler):
         log.debug("Write Bit %s from pc:%s" % (hex(reg), hex(qemu.regs.lr)))
         return True, None
 
-    @bp_handler(['trx_frame_read'])
+    @bp_handler(["trx_frame_read"])
     def read_frame(self, qemu, bp_addr):
         # void trx_frame_read(uint8_t *data, uint8_t length);
         data_ptr = qemu.regs.r0
@@ -115,7 +113,7 @@ class SAMR21Radio(BPHandler):
                 qemu.write_memory(data_ptr, 1, frame, len(frame))
         return True, None
 
-    @bp_handler(['trx_frame_write'])
+    @bp_handler(["trx_frame_write"])
     def write_frame(self, qemu, bp_addr):
         # void trx_frame_write(uint8_t *data, uint8_t length);
         data_ptr = qemu.regs.r0
@@ -125,21 +123,21 @@ class SAMR21Radio(BPHandler):
         self.model.tx_frame(self.get_id(qemu), frame)
         return True, None
 
-    @bp_handler(['trx_sram_read'])
+    @bp_handler(["trx_sram_read"])
     def sram_read(self, qemu, bp_addr):
         # void trx_sram_read(uint8_t addr, uint8_t *data, uint8_t length);
         data_ptr = qemu.regs.r0
         log.info("SRAM Read %s , len %i" % (hex(data_ptr), qemu.regs.r1))
         return True, None
 
-    @bp_handler(['trx_sram_write'])
+    @bp_handler(["trx_sram_write"])
     def sram_write(self, qemu, bp_addr):
-         # void trx_sram_write(uint8_t addr, uint8_t *data, uint8_t length);
+        # void trx_sram_write(uint8_t addr, uint8_t *data, uint8_t length);
         data_ptr = qemu.regs.r0
         log.info("SRAM Write %s , len %i" % (hex(data_ptr), qemu.regs.r1))
         return True, None
 
-    @bp_handler(['trx_aes_wrrd'])
+    @bp_handler(["trx_aes_wrrd"])
     def aes_wrrd(self, qemu, bp_addr):
         # void trx_aes_wrrd(uint8_t addr, uint8_t *idata, uint8_t length);
         data_ptr = qemu.regs.r0
@@ -149,8 +147,8 @@ class SAMR21Radio(BPHandler):
     # void trx_spi_done_cb_init(void *spi_done_cb);
     # void trx_spi_init(void);  Likely needs to execute to set call back
 
-    @bp_handler(['PhyReset'])
+    @bp_handler(["PhyReset"])
     def nop_return_void(self, qemu, bp_addr):
-         # void PhyReset(void);
+        # void PhyReset(void);
         log.info("Init Called")
         return True, None

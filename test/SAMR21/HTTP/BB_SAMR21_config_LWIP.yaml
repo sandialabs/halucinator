@@ -1,7 +1,7 @@
 callables:  # Functions that can be called by the intercepts
   pbuf_free: null
   ksz8851snl_rx_populate_queue:
-  
+
 intercepts:
 
 # --------------------------Debug --------------------------------------------
@@ -20,7 +20,7 @@ intercepts:
 
 # -----------------------    Startup ------------------------------------------
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: system_clock_init
 
@@ -83,4 +83,3 @@ intercepts:
   function: sys_get_ms
 
 # ----------------------------------------------------------------------------
- 
