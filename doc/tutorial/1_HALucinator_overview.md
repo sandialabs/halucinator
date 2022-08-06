@@ -19,8 +19,8 @@ effect like setting clock sources, clock divisors, indicating data is available,
 providing the data, writing data, etc.  If we want to emulate the UART we have
 to understand what every bit of these registers does, implement it and the
 state machine that connects them.  Considering the huge numbers of different
-micro-controllers and that most have different implementations of their UARTs, 
-emulating at scale becomes a daunting problem.  
+micro-controllers and that most have different implementations of their UARTs,
+emulating at scale becomes a daunting problem.
 
 This is a challenge for developers, as well, so manufactures provide, and/or developers
 write Hardware Abstraction Libraries (HAL)'s to simplify the emulation process.

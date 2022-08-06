@@ -1,6 +1,6 @@
 #!/bin/bash
 . /etc/bash_completion
-set -e 
+set -e
 set -x
 
 AVATAR_REPO=https://github.com/avatartwo/avatar2.git
@@ -10,7 +10,7 @@ if pushd deps/avatar2; then
     git pull
     popd
 else
-    git clone  "$AVATAR_REPO" deps/avatar2    
+    git clone  "$AVATAR_REPO" deps/avatar2
 fi
 
 # Setup avatar2
@@ -23,4 +23,3 @@ pushd targets
 #./build_panda.sh
 popd
 popd
-

@@ -1,12 +1,13 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
 
-from .peripheral import requires_tx_map, requires_rx_map, requires_interrupt_map
-from . import peripheral_server
-from collections import defaultdict
-import os
 import logging
+import os
+
+from halucinator.peripheral_models import peripheral_server
+from halucinator.peripheral_models.peripheral import requires_rx_map, requires_tx_map
+
 log = logging.getLogger(__name__)
 
 
@@ -15,7 +16,7 @@ log = logging.getLogger(__name__)
 # without requiring every function to be a classmethod
 @peripheral_server.peripheral_model
 class SDCardModel(object):
-    STATES = {'READY': 1}
+    STATES = {"READY": 1}
     BLOCK_SIZE = {}
     filename = {}
 
@@ -25,8 +26,7 @@ class SDCardModel(object):
         if filename is not None:
             if peripheral_server.base_dir is not None:
                 log.info("Setting File name using output dir")
-                cls.filename[sd_id] = os.path.join(
-                    peripheral_server.base_dir, filename)
+                cls.filename[sd_id] = os.path.join(peripheral_server.base_dir, filename)
             else:
                 log.info("No output found dir")
                 cls.filename[sd_id] = filename
@@ -36,7 +36,8 @@ class SDCardModel(object):
         if sd_id not in cls.filename:
             if peripheral_server.base_dir is not None:
                 cls.filename[sd_id] = os.path.join(
-                    peripheral_server.base_dir, "sd_card_%s.bin" % str(sd_id))
+                    peripheral_server.base_dir, "sd_card_%s.bin" % str(sd_id)
+                )
             else:
                 cls.filename[sd_id] = "sd_card_%s.bin" % str(sd_id)
 
@@ -44,12 +45,12 @@ class SDCardModel(object):
 
     @classmethod
     def read_block(cls, sd_id, block_num):
-        '''
-            Reads data from the file, and returns the data if possible 
-            return None
-        '''
+        """
+        Reads data from the file, and returns the data if possible
+        return None
+        """
         data = None
-        with open(cls.get_filename(sd_id), 'rb') as f:
+        with open(cls.get_filename(sd_id), "rb") as f:
             addr = block_num * SDCardModel.BLOCK_SIZE[sd_id]
             log.info("SDCardModle Reading: %s" % hex(addr))
             f.seek(addr)
@@ -59,15 +60,15 @@ class SDCardModel(object):
     @classmethod
     @requires_tx_map
     def write_block(cls, sd_id, block_num, data):
-        '''
-            Writes the data to a file, and returns True if no errors else 
-            return False
-        '''
+        """
+        Writes the data to a file, and returns True if no errors else
+        return False
+        """
         filename = cls.get_filename(sd_id)
         if not os.path.exists(filename):
-            with open(filename, 'wb') as f:
+            with open(filename, "wb") as f:
                 pass  # Create the file
-        with open(filename, 'rb+') as f:
+        with open(filename, "rb+") as f:
             addr = block_num * SDCardModel.BLOCK_SIZE[sd_id]
             log.info("SDCardModle Writeing: %s" % hex(addr))
             f.seek(addr)
@@ -82,4 +83,4 @@ class SDCardModel(object):
     @classmethod
     @requires_rx_map
     def get_state(cls, sd_id):
-        return SDCardModel.STATES['Ready']
+        return SDCardModel.STATES["Ready"]

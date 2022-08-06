@@ -2,39 +2,39 @@
 intercepts:
 
 # --------------------------Remove unneed MMIO -------------------------------
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: rtc_calendar_init
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: rtc_calendar_enable
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: rtc_calendar_disable
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: rtc_calendar_reset
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: rtc_calendar_set_alarm
-  
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: 0}
   function: spi_init
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: board_init
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: sd_mmc_spi_init
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: _system_pinmux_config
 
@@ -53,7 +53,7 @@ intercepts:
 
 # -----------------------    Startup ------------------------------------------
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: system_clock_init
 

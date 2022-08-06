@@ -4,7 +4,7 @@ intercepts:
 # -----------------------    Startup ------------------------------------------
 
 - addr: 0x800208c
-  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+  class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: system_init
 # -----------------------------------------------------------------------------

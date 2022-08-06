@@ -1,17 +1,17 @@
-# Copyright 2019-2021 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019-2021 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
 
-from .peripheral import requires_tx_map, requires_rx_map, requires_interrupt_map
-from . import peripheral_server
-from collections import defaultdict
-import os
 import io
-import shutil
 import logging
-from os import sys, path
-from stat import S_ISDIR
-from errno import *
+import os
+import shutil
+
+# from errno import *
+from errno import EEXIST, ENOTBLK, EINVAL, ENOENT, EBADF, EBUSY
+
+from halucinator.peripheral_models import peripheral_server
+
 log = logging.getLogger(__name__)
 
 
@@ -28,10 +28,9 @@ class HostFSModel(object):
     open_directories = {}
 
     def __init__(self):
-        """Initialization of HostFSModel class
-        """  
+        """Initialization of HostFSModel class"""
 
-        # Make sure our VFS is clean of any lingering 
+        # Make sure our VFS is clean of any lingering
         # symlinks before beginning
         try:
             shutil.rmtree("vfs")
@@ -47,7 +46,7 @@ class HostFSModel(object):
         abs_path = os.path.abspath(path)
         common_prefix_verify = os.path.abspath("./vfs")
         common_prefix = os.path.commonpath([abs_path, common_prefix_verify])
-        return (common_prefix == common_prefix_verify)
+        return common_prefix == common_prefix_verify
 
     def is_valid_mount(self, mp):
         """Helper function to verify if a file/folder is within the VFS folder or not.
@@ -59,7 +58,7 @@ class HostFSModel(object):
         for storage in self.mount_points:
             common_prefix_verify = os.path.abspath("./vfs" + self.mount_points[storage])
             common_prefix = os.path.commonpath([abs_path, common_prefix_verify])
-            if (common_prefix == common_prefix_verify):
+            if common_prefix == common_prefix_verify:
                 return True
         return False
 
@@ -74,29 +73,29 @@ class HostFSModel(object):
         :return: 0 on success, -ERRNO on errors.
         :rtype: int
         """
-        if (fs_type in self.mount_points):
+        if fs_type in self.mount_points:
             return -EBUSY
         print("mount ", mount_path, fs_type)
-        dir_path = os.path.realpath("storage/"+str(fs_type))
+        dir_path = os.path.realpath("storage/" + str(fs_type))
         #
         try:
             os.makedirs("vfs", exist_ok=True)
         except OSError:
-            pass        
+            pass
 
         try:
-            os.makedirs("storage/"+ str(fs_type), exist_ok=True)
+            os.makedirs("storage/" + str(fs_type), exist_ok=True)
         except OSError:
             pass
 
-        if not self.is_valid_path(self, "vfs"+mount_path):
+        if not self.is_valid_path(self, "vfs" + mount_path):
             return 0
 
         if self.is_valid_mount(self, "vfs" + mount_path):
             return 0
 
         try:
-            os.symlink(dir_path, "vfs"+mount_path, target_is_directory=True)
+            os.symlink(dir_path, "vfs" + mount_path, target_is_directory=True)
         except OSError:
             pass
         self.mount_points[fs_type] = mount_path
@@ -115,30 +114,30 @@ class HostFSModel(object):
                  and on success, a file handle.
         :rtype: int, int
         """
-        if not self.is_valid_path(self, "./vfs"+f_path):
+        if not self.is_valid_path(self, "./vfs" + f_path):
             return (-ENOENT, 0)
 
-        if not self.is_valid_mount(self, "./vfs"+f_path):
+        if not self.is_valid_mount(self, "./vfs" + f_path):
             return (-ENOENT, 0)
 
         # TODO make sure files can't be created in /
 
         try:
-            if (not path.exists("./vfs" + f_path) and (flags & 0x10)):
+            if not os.path.exists("./vfs" + f_path) and (flags & 0x10):
                 open("./vfs" + f_path, "wb+").close()
-            if (flags & 0x20):
-                if ((flags & 0x03) == 0x03):
+            if flags & 0x20:
+                if (flags & 0x03) == 0x03:
                     f = open("./vfs" + f_path, "rb+")
-                elif ((flags & 0x03) == 0x02):
+                elif (flags & 0x03) == 0x02:
                     f = open("./vfs" + f_path, "wb")
                 else:
                     f = open("./vfs" + f_path, "rb+")
 
                 f.seek(0, os.SEEK_END)
             else:
-                if ((flags & 0x03) == 0x03):
+                if (flags & 0x03) == 0x03:
                     f = open("./vfs" + f_path, "rb+")
-                elif ((flags & 0x03) == 0x02):
+                elif (flags & 0x03) == 0x02:
                     f = open("./vfs" + f_path, "wb")
                 else:
                     f = open("./vfs" + f_path, "rb+")
@@ -147,7 +146,6 @@ class HostFSModel(object):
         except FileNotFoundError:
             return (-ENOENT, 0)
 
-        
         self.open_files[self.current_fd] = f
         self.current_fd += 1
         return (0, (self.current_fd - 1))
@@ -213,10 +211,10 @@ class HostFSModel(object):
         :return: A tuple of an errcode (0 on success, -ERRNO on errors) and stat results.
         :rtype: int, os.stat_result
         """
-        if not self.is_valid_path(self, "./vfs"+f_path):
+        if not self.is_valid_path(self, "./vfs" + f_path):
             return -ENOENT, None
 
-        if not self.is_valid_mount(self, "./vfs"+f_path):
+        if not self.is_valid_mount(self, "./vfs" + f_path):
             return (-ENOENT, None)
 
         try:
@@ -239,7 +237,7 @@ class HostFSModel(object):
         self.open_files[f_id].close()
         del self.open_files[f_id]
         return 0
-        #wipe id to zero
+        # wipe id to zero
 
     @classmethod
     def seek(self, f_id, f_pos, f_whence):
@@ -304,9 +302,9 @@ class HostFSModel(object):
         if f_id not in self.open_files:
             return -EBADF
 
-        return 0 # self.open_files[f_id].flush()
+        return 0  # self.open_files[f_id].flush()
 
-    @classmethod 
+    @classmethod
     def closedir(self, d_id):
         """Closes a VFS directory handle
 
@@ -317,7 +315,7 @@ class HostFSModel(object):
         """
         if d_id not in self.open_directories:
             return 0
-        
+
         del self.open_directories[d_id]
         return 0
 
@@ -330,21 +328,21 @@ class HostFSModel(object):
         :return: 0 on success, -ERRNO on errors.
         :rtype: int
         """
-        if not self.is_valid_path(self, "./vfs"+d_path):
+        if not self.is_valid_path(self, "./vfs" + d_path):
             return -ENOENT
 
-        if not self.is_valid_mount(self, "./vfs"+d_path):
-            return (-ENOENT)
+        if not self.is_valid_mount(self, "./vfs" + d_path):
+            return -ENOENT
 
         # TODO make sure folders can't be created in /
 
-        if (path.exists("./vfs" + d_path)):
+        if os.path.exists("./vfs" + d_path):
             return -EEXIST
-        
+
         os.mkdir("./vfs" + d_path)
         return 0
 
-    @classmethod 
+    @classmethod
     def opendir(self, d_path):
         """Opens a VFS directory and returns a directory handle
 
@@ -354,13 +352,13 @@ class HostFSModel(object):
                  on success, a directory handle.
         :rtype: int, int
         """
-        if not self.is_valid_path(self, "./vfs"+d_path):
+        if not self.is_valid_path(self, "./vfs" + d_path):
             return (-ENOENT, 0)
 
-        if not self.is_valid_mount(self, "./vfs"+d_path):
+        if not self.is_valid_mount(self, "./vfs" + d_path):
             return (-ENOENT, 0)
 
-        if (not path.exists("./vfs" + d_path)):
+        if not os.path.exists("./vfs" + d_path):
             return (-ENOENT, 0)
 
         self.open_directories[self.current_dir] = os.scandir("./vfs" + d_path)
@@ -380,7 +378,7 @@ class HostFSModel(object):
         """
         if d_id not in self.open_directories:
             return -EBADF, None, ""
-        
+
         try:
             d_entry = next(self.open_directories[d_id])
         except StopIteration:
@@ -400,13 +398,13 @@ class HostFSModel(object):
         :return: Returns 0 on success, -ERRNO on errors
         :rtype: int
         """
-        if not self.is_valid_path(self, "./vfs"+f_path):
+        if not self.is_valid_path(self, "./vfs" + f_path):
             return -ENOENT
 
-        if not self.is_valid_mount(self, "./vfs"+f_path):
-            return (-ENOENT)
+        if not self.is_valid_mount(self, "./vfs" + f_path):
+            return -ENOENT
 
-        if (not path.exists("./vfs" + f_path)):
+        if not os.path.exists("./vfs" + f_path):
             return -ENOENT
         try:
             os.unlink("./vfs" + f_path)
@@ -431,29 +429,29 @@ class HostFSModel(object):
         :return: Returns 0 on success, -ERRNO on errors
         :rtype: int
         """
-        if not self.is_valid_path(self, "./vfs"+src):
+        if not self.is_valid_path(self, "./vfs" + src):
             return -EINVAL
 
-        if not self.is_valid_mount(self, "./vfs"+src):
-            return (-EINVAL)
-
-        if not self.is_valid_path(self, "./vfs"+dst):
+        if not self.is_valid_mount(self, "./vfs" + src):
             return -EINVAL
 
-        if not self.is_valid_mount(self, "./vfs"+dst):
-            return (-EINVAL)
+        if not self.is_valid_path(self, "./vfs" + dst):
+            return -EINVAL
+
+        if not self.is_valid_mount(self, "./vfs" + dst):
+            return -EINVAL
 
         # TODO make sure files can't be created in /
 
-        if (not path.exists("./vfs" + src)):
-            return -ENOENT # -EINVAL?
+        if not os.path.exists("./vfs" + src):
+            return -ENOENT  # -EINVAL?
 
         try:
             os.rename("./vfs" + src, "./vfs" + dst)
         except OSError:
             return -ENOTBLK
         return 0
-    
+
     @classmethod
     def truncate(self, f_id, length):
         """Truncates a VFS file handle to a specified length.

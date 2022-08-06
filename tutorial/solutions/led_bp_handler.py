@@ -1,24 +1,26 @@
-# Copyright 2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2020 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
 
-from os import sys, path
-# NOTE:
-# We import LED Model here
-from ..peripheral_models.led_peripheral import LEDModel
-from halucinator.bp_handlers import BPHandler, bp_handler
 import logging
-log = logging.getLogger(__name__)
 
 from halucinator import hal_log
+from halucinator.bp_handlers import BPHandler, bp_handler
+
+# NOTE:
+# We import LED Model here
+from tutorial.hal_tutorial.peripheral_models.led_peripheral import LEDModel
+
+log = logging.getLogger(__name__)
+
+
 hal_log = hal_log.getHalLogger()
 
 
 class LEDHandler(BPHandler):
-
     def __init__(self, map_dict=None):
         self.model = LEDModel
-        if map_dict == None:
+        if map_dict is None:
             self.led_map = {}
         else:
             self.led_map = map_dict
@@ -30,7 +32,7 @@ class LEDHandler(BPHandler):
             led_id = led_id
         return led_id
 
-    @bp_handler(['My_BSP_LED_Init'])
+    @bp_handler(["My_BSP_LED_Init"])
     def led_init(self, target, bp_addr):
         log.debug("Init Called")
         # STEP 1.
@@ -41,7 +43,7 @@ class LEDHandler(BPHandler):
         self.model.led_off(led_id)
         return True, None  # Intercept and Return type is void
 
-    @bp_handler(['My_BSP_LED_On'])
+    @bp_handler(["My_BSP_LED_On"])
     def on(self, target, bp_addr):
         log.debug("LED On Called")
         # STEP 2.
@@ -52,7 +54,7 @@ class LEDHandler(BPHandler):
         self.model.led_on(led_id)
         return True, None  # Return type is void
 
-    @bp_handler(['My_BSP_LED_Off'])
+    @bp_handler(["My_BSP_LED_Off"])
     def off(self, target, bp_addr):
         log.debug("LED Off Called")
         # STEP 3.
@@ -62,5 +64,3 @@ class LEDHandler(BPHandler):
         led_id = self.get_id(target.get_arg(0))
         self.model.led_off(led_id)
         return True, None  # Return type is void
-
- 

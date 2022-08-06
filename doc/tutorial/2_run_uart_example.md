@@ -8,7 +8,7 @@ messages over a UART and then waits for 10 characters to be sent back over the
 UART.  The binary then echos those characters back, prints another message, and
 enters an infinite loop.  This is the same example as in HALucinator's README and
 is located in `~/halucinator/test/STM32/example`. All commands should be run from
-there unless otherwise specified.  We will use this example firmware throughout 
+there unless otherwise specified.  We will use this example firmware throughout
 this tutorial.
 
 
@@ -47,14 +47,14 @@ int main(void)
     Error_Handler();
   }
 
-  /*##-2- Start the transmission process #####################################*/  
+  /*##-2- Start the transmission process #####################################*/
   if(HAL_UART_Transmit_IT(&UartHandle, (uint8_t*)aTxStartMessage, TXSTARTMESSAGESIZE)!= HAL_OK)
   {
     /* Transfer error in transmission process */
     Error_Handler();
   }
 
-  /*##-3- Put UART peripheral in reception process ###########################*/  
+  /*##-3- Put UART peripheral in reception process ###########################*/
   if(HAL_UART_Receive_IT(&UartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
   {
     /* Transfer error in reception process */
@@ -66,19 +66,19 @@ int main(void)
   {
   }
 
-  /*##-5- Send the received Buffer ###########################################*/  
+  /*##-5- Send the received Buffer ###########################################*/
   if(HAL_UART_Transmit_IT(&UartHandle, (uint8_t*)aRxBuffer, RXBUFFERSIZE)!= HAL_OK)
   {
     /* Transfer error in transmission process */
     Error_Handler();
   }
 
-  /*##-6- Wait for the end of the transfer ###################################*/  
+  /*##-6- Wait for the end of the transfer ###################################*/
   while (HAL_UART_GetState(&UartHandle) != HAL_UART_STATE_READY)
   {
   }
 
-  /*##-7- Send the End Message ###############################################*/  
+  /*##-7- Send the End Message ###############################################*/
   if(HAL_UART_Transmit_IT(&UartHandle, (uint8_t*)aTxEndMessage, TXENDMESSAGESIZE)!= HAL_OK)
   {
     /* Turn LED3 on: Transfer error in transmission process */
@@ -88,12 +88,12 @@ int main(void)
     }
   }
 
-  /*##-8- Wait for the end of the transfer ###################################*/  
+  /*##-8- Wait for the end of the transfer ###################################*/
   while (HAL_UART_GetState(&UartHandle) != HAL_UART_STATE_READY)
   {
   }
 
-  /* Infinite loop */  
+  /* Infinite loop */
   while (1)
   {
   }
@@ -203,7 +203,7 @@ These files are:
 
 If HALucinator fails to run, then examining the `_err.txt` and `_out.tx` can often
 be helpful.  However, of most interest is usually the `qemu_asm.log`. This is a
-text file listing the disassembly of the basic blocks as they executed.  
+text file listing the disassembly of the basic blocks as they executed.
 It can be opened in a text editor, but is often very large. To see the last 100
 lines of the execution trace use tail.
 
@@ -224,7 +224,7 @@ code ~/halucinator/test/STM32/example
 ### Memory configuration
 
 First open up `Uart_Hyperterminal_IT_O0_memory.yaml`.  This specifies the
-memories used in the emulator.  
+memories used in the emulator.
 
 
 ```yaml

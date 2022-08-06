@@ -1,9 +1,9 @@
 /**
   @page UART_Hyperterminal_IT UART Hyperterminal IT example
-  
+
   @verbatim
   ******************** (C) COPYRIGHT 2017 STMicroelectronics *******************
-  * @file    UART/UART_Hyperterminal_IT/readme.txt 
+  * @file    UART/UART_Hyperterminal_IT/readme.txt
   * @author  MCD Application Team
   * @brief   Description of the UART Hyperterminal example.
   ******************************************************************************
@@ -33,32 +33,32 @@
   ******************************************************************************
   @endverbatim
 
-@par Example Description 
+@par Example Description
 
-This example describes an UART transmission (transmit/receive) between a board and 
+This example describes an UART transmission (transmit/receive) between a board and
 an Hyperterminal PC application by using an interrupt.
 
 Board: STM32469I-EVAL
 Tx Pin: PA.09
 Rx Pin: PA.10
-   _________________________ 
+   _________________________
   |           ______________|                       _______________
   |          |USART1        |                      | HyperTerminal |
   |          |              |                      |               |
   |          |           TX |______________________|RX             |
   |          |              |                      |               |
-  |          |              |     RS232 Cable      |               |             
+  |          |              |     RS232 Cable      |               |
   |          |              |                      |               |
-  |          |           RX |______________________|TX             |          
-  |          |              |                      |               |           
-  |          |______________|                      |_______________|          
-  |                         |                       
-  |                         |                    
-  |                         |                      
-  |                         |                      
-  |_STM32_Board_____________|                      
+  |          |           RX |______________________|TX             |
+  |          |              |                      |               |
+  |          |______________|                      |_______________|
+  |                         |
+  |                         |
+  |                         |
+  |                         |
+  |_STM32_Board_____________|
 
-At the beginning of the main program the HAL_Init() function is called to reset 
+At the beginning of the main program the HAL_Init() function is called to reset
 all the peripherals, initialize the Flash interface and the systick.
 Then the SystemClock_Config() function is used to configure the system
 clock (SYSCLK) to run at 180 MHz for STM32F4xx Devices.
@@ -69,19 +69,19 @@ the configuration of the needed UART resources according to the used hardware.
 You may update this function to change UART configuration.
 
 The UART/Hyperterminal communication is then initiated.
-The HAL_UART_Receive_IT() and the HAL_UART_Transmit_IT() functions allow respectively 
-the reception of Data from Hyperterminal and the transmission of a predefined data 
+The HAL_UART_Receive_IT() and the HAL_UART_Transmit_IT() functions allow respectively
+the reception of Data from Hyperterminal and the transmission of a predefined data
 buffer.
 
-The Asynchronous communication aspect of the UART is clearly highlighted as the  
+The Asynchronous communication aspect of the UART is clearly highlighted as the
 data buffers transmission/reception to/from Hyperterminal are done simultaneously.
 
-For this example the TxBuffer is predefined and the RxBuffer size is limited to 
+For this example the TxBuffer is predefined and the RxBuffer size is limited to
 10 data by the mean of the RXBUFFERSIZE define in the main.c file.
 
-In a first step the received data will be stored in the RxBuffer buffer and the 
+In a first step the received data will be stored in the RxBuffer buffer and the
 TxBuffer buffer content will be displayed in the Hyperterminal interface.
-In a second step the received data in the RxBuffer buffer will be sent back to 
+In a second step the received data in the RxBuffer buffer will be sent back to
 Hyperterminal and displayed.
 The end of this two steps are monitored through the HAL_UART_GetState() function
 result.
@@ -89,10 +89,10 @@ result.
 STM32 Eval board's LEDs can be used to monitor the transfer status:
  - LED1 is ON when the transmission process is complete.
  - LED2 is ON when the reception process is complete.
- - LED3 is ON when there is an error in transmission/reception process. 
+ - LED3 is ON when there is an error in transmission/reception process.
 
 The UART is configured as follows:
-    - BaudRate = 9600 baud  
+    - BaudRate = 9600 baud
     - Word Length = 8 Bits (7 data bit + 1 parity bit)
     - One Stop Bit
     - Odd parity
@@ -110,7 +110,7 @@ The UART is configured as follows:
       a peripheral ISR process, then the SysTick interrupt must have higher priority (numerically lower)
       than the peripheral interrupt. Otherwise the caller ISR process will be blocked.
       To change the SysTick interrupt priority you have to use HAL_NVIC_SetPriority() function.
-      
+
 @note The application needs to ensure that the SysTick time base is always set to 1 millisecond
       to have correct HAL operation.
 
@@ -118,11 +118,11 @@ The UART is configured as follows:
 @note The connection of the LCD reset pin to a dedicated GPIO PK7 instead of the STM32F469 NRST pin may cause residual display on LCD with applications/examples that do not require display.
 	  The LCD clear can be ensured by hardware through the board's power off/power on or by software calling the BSP_LCD_Reset() function.
 
-@par Directory contents 
+@par Directory contents
 
   - UART/UART_Hyperterminal_IT/Inc/stm32f4xx_hal_conf.h    HAL configuration file
   - UART/UART_Hyperterminal_IT/Inc/stm32f4xx_it.h          IT interrupt handlers header file
-  - UART/UART_Hyperterminal_IT/Inc/main.h                  Main program header file  
+  - UART/UART_Hyperterminal_IT/Inc/main.h                  Main program header file
   - UART/UART_Hyperterminal_IT/Src/stm32f4xx_it.c          IT interrupt handlers
   - UART/UART_Hyperterminal_IT/Src/main.c                  Main program
   - UART/UART_Hyperterminal_IT/Src/stm32f4xx_hal_msp.c     HAL MSP file
@@ -134,30 +134,30 @@ The UART is configured as follows:
   - This example runs on STM32F469xx/STM32F479xx devices.
 
   - This example has been tested and validated with STMicroelectronics STM32469I-EVAL RevC board and can be
-    easily tailored to any other supported device and development board.    
-      
+    easily tailored to any other supported device and development board.
+
   - STM32469I-EVAL Set-up
     - Connect a null-modem female/female RS232 cable between the DB9 connector
   - TARGET_STM32469I_EVAL Set-up
-    - Connect a null-modem female/female RS232 cable between the DB9 connector CN7 (USART1) 
+    - Connect a null-modem female/female RS232 cable between the DB9 connector CN7 (USART1)
     and PC serial port on which you want to display data on the HyperTerminal.
   @note Make sure that :
-    - jumper JP8  is on RS232_RX position (1-2)  and 
-    - jumper JP15 is on USART1_RX position 1-2)and 
-    - jumper JP19 is on USART1_TX position (1-2).      
-          
+    - jumper JP8  is on RS232_RX position (1-2)  and
+    - jumper JP15 is on USART1_RX position 1-2)and
+    - jumper JP19 is on USART1_TX position (1-2).
+
   - Hyperterminal configuration:
     - Word Length = 7 Bits
     - One Stop Bit
     - Odd parity
     - BaudRate = 9600 baud
-    - flow control: None 
+    - flow control: None
 
 
-@par How to use it ? 
+@par How to use it ?
 
 In order to make the program work, you must do the following :
- - Open your preferred toolchain 
+ - Open your preferred toolchain
  - Rebuild all files and load your image into target memory
  - Run the example
 

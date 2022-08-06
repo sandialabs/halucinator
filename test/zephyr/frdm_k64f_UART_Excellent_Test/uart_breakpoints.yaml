@@ -2,7 +2,7 @@ intercepts:
 
 # These three breakpoints are used to interact with the UART system.
 # They implement both input and output. Our tests have shown them to be
-# fairly universal between boards. 
+# fairly universal between boards.
 
 - class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
   symbol: uart_mcux_init
@@ -27,5 +27,3 @@ intercepts:
 - class: halucinator.bp_handlers.zephyr.zephyr_uart.ZephyrUART
   symbol: console_getline
   function: console_getline
-
-

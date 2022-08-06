@@ -2,7 +2,7 @@ callables:
   rf233_interrupt_poll: null
   AT86RFX_ISR: null
   extint_register_callback: null
-  
+
 intercepts:
 
 # --------------------------Debug --------------------------------------------
@@ -21,7 +21,7 @@ intercepts:
 
 # -----------------------    Startup ------------------------------------------
 
-- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
   registration_args: {ret_val: null}
   function: system_clock_init
 

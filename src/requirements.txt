@@ -2,8 +2,12 @@ PyYAML
 zmq
 IPython
 pyelftools
-scapy==2.4.4 
+scapy==2.4.4
 pycparser
 avatar2
 pyserial
 angr
+black
+flake8
+pylint
+pre-commit

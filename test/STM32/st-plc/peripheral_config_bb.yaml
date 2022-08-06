@@ -8,13 +8,13 @@ intercepts:
 # functionality to work
 
 # BSP_IO_WritePin(RSTI_PIN, BSP_IO_PIN_RESET);
-#- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+#- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
 #  registration_args: {params: [r0, r1], ret_val: null}
 #  function: BSP_IO_WritePin
-#- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+#- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
 #  registration_args: {params: [], ret_val: 1}
 #  function: BSP_SD_IsDetected
-# End Fixups----------------------------------------------------------  
+# End Fixups----------------------------------------------------------
 
 
 # ------------------------GPIO ----------------------------
@@ -101,19 +101,19 @@ intercepts:
 ## --------------------------ETHERNET ----------------------------------------
 #- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
 #  function: HAL_ETH_GetReceivedFrame
-#- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+#- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
 #  registration_args: {params: [r0], ret_val: 0}
 #  function: HAL_ETH_Init
-#- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger 
+#- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
 #  registration_args: {params: [r0], ret_val: 0}
 #  function: HAL_ETH_MspInit
 #- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
 #  function: HAL_ETH_ReadPHYRegister
 #- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
-#  registration_args: {params: [r0], ret_val: 0} 
+#  registration_args: {params: [r0], ret_val: 0}
 #  function: HAL_ETH_Start
 #- class: halucinator.bp_handlers.generic.armv7m_param_log.ARMv7MEABILogger
-#  registration_args: {params: [r0], ret_val: 0} 
+#  registration_args: {params: [r0], ret_val: 0}
 #  function: HAL_ETH_Stop
 #- class: halucinator.bp_handlers.stm32f4.stm32f4_eth.STM32F4Ethernet
 #  function: HAL_ETH_TransmitFrame
@@ -122,9 +122,9 @@ intercepts:
 
 
 # -------------------------------UART ----------------------------------------
-- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART 
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
   function: HAL_UART_Init
-- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART 
+- class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
   function: HAL_UART_GetState
 - class: halucinator.bp_handlers.stm32f4.stm32f4_uart.STM32F4UART
   function: HAL_UART_Transmit

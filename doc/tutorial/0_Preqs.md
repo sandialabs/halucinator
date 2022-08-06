@@ -8,5 +8,5 @@ It also uses Ghidra 9.1.2 which we have located in ~/ghidra_9.1.2.  It
 can be located anywhere but you'll have to adjust paths. It can be obtained
 from https://ghidra-sre.org/.
 
-We also use visual studio code through the tutorial.  You can use this or your 
+We also use visual studio code through the tutorial.  You can use this or your
 preferred editor.

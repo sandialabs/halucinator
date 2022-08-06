@@ -6,4 +6,3 @@ last char was: 0x74
 another line
 line: another line
 last char was: 0x65
-

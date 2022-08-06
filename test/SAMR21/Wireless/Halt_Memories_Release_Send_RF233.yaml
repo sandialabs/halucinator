@@ -26,7 +26,6 @@ peripherals:
     MTB:     {base_addr: 0x41006000, emulate: HaltPeripheral, permissions: rw-, size: 0x1000}
     SBMatrix: {base_addr: 0x41007000, emulate: HaltPeripheral, permissions: rw-, size: 0x1000}
     PAC2:    {base_addr: 0x42000000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
-    PAC2:    {base_addr: 0x42000000, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
     EVSYS:   {base_addr: 0x42000400, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
     SERCOM0: {base_addr: 0x42000800, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
     SERCOM1: {base_addr: 0x42000C00, emulate: HaltPeripheral, permissions: rw-, size: 0x400}
