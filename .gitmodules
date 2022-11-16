@@ -1,0 +1,3 @@
+[submodule "deps/avatar2"]
+	path = deps/avatar2
+	url = ../avatar2.git
