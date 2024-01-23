@@ -1,124 +1,106 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
+"""
+Peripheral Model for interrupts, exposes interfaces that can be used over both
+ZMQ and BP Handlers
+"""
 
-from . import peripheral_server
-from collections import deque, defaultdict
+from collections import defaultdict
 import logging
+from . import peripheral_server
+
 log = logging.getLogger(__name__)
 # log.setLevel(logging.DEBUG)
 
 
 # Register the pub/sub calls and methods that need mapped
 @peripheral_server.peripheral_model
-class Interrupts(object):
-    '''
-        Models and external interrupt controller
-        Use when need to trigger and interrupt and need additional state
-        about it
-    '''
+class Interrupts:
+    """
+    Models and external interrupt controller
+    Use when need to trigger and interrupt and need additional state
+    about it
+    """
+
     active = defaultdict(bool)
     enabled = defaultdict(bool)
 
     @classmethod
     @peripheral_server.reg_rx_handler
     def interrupt_request(cls, msg):
-        
-        if 'num' in msg and msg['num'] in cls._irq_map_i2n:
-            irq_num = msg['num']
+        """
+        Creates ZMQ interface to trigger an interrupt
+        """
+        if "num" in msg:
+            irq_num = msg["num"]
         else:
-            log.error("Unsupported IRQ %s" %(msg))
-        
+            log.error("Unsupported IRQ %s", msg)
+
         cls.set_active_qmp(irq_num)
 
     @classmethod
     def set_active_qmp(cls, irq_num):
-        log.debug("Set Active: %s" % hex(irq_num))
-        cls.active[irq_num] = True
-        cls._trigger_interrupt_qmp(irq_num)
+        """
+        Sets an interrupt using QMP Interface
+        DO NOT use when executing from context of a BP Handler
+        """
+        log.debug("Set Active QMP: %s", hex(irq_num))
+        peripheral_server.irq_set_qmp(irq_num)
 
     @classmethod
     def set_active_bp(cls, irq_num):
-        log.debug("Set Active: %s" % hex(irq_num))
-        cls.active[irq_num] = True
-        cls._trigger_interrupt_bp(irq_num)
+        """
+        Sets an interrupt using GDB interface can be used in BP Handlers
+        """
+        log.debug("Set Active BP: %s", hex(irq_num))
+        peripheral_server.irq_set_bp(irq_num)
 
     @classmethod
     def clear_active_bp(cls, irq_num):
-        log.debug("Clear Active: %i" % irq_num)
+        """
+        Clears active interrupt.  Safe for use in BP Handler context
+        """
+        log.debug("Clear Active BP: %i", irq_num)
         peripheral_server.irq_clear_bp(irq_num)
-        cls.active[irq_num] = False
 
     @classmethod
     def clear_active_qmp(cls, irq_num):
-        log.debug("Clear Active: %i" % irq_num)
+        """
+        Clears an active interrupt using QMP interface
+        DO NOT use from context of BP Handler
+        """
+        log.debug("Clear Active: %i", irq_num)
         peripheral_server.irq_clear_qmp(irq_num)
-        cls.active[irq_num] = False
-        
-
-    @classmethod
-    def is_active(cls, irq_num):
-        log.debug("Is Active: %i" % irq_num)
-        return cls.active[irq_num]
-
-    @classmethod
-    def get_first_irq(cls, highest_first=False):
-        '''
-            Returns the name and number of the highest priority interrupt
-            
-            :param highest_first:  highest irq
-            :returns irq_num:
-        '''
-        active_irqs = sorted(cls.get_active_irqs(), reverse=highest_first)
-        if len(active_irqs) > 0:
-            return active_irqs[0]
-        else:
-            return None
-
-    @classmethod
-    def get_active_irqs(cls):
-        active_irqs = set([irq_num for irq_num, state in cls.active.items() if state ])
-        enabled_irqs = set([irq_num for irq_num, state in cls.enabled.items() if state ])
-        active_irqs = active_irqs.intersection(enabled_irqs)
-        # log.debug("Get Active ISRs: %s" % active_irqs)
-        return active_irqs
-
-    @classmethod
-    def _trigger_interrupt_qmp(cls, irq_num):
-        '''
-            This should be used to trigger an interrupt for everywhere
-            except in a bp_handler.
-        '''
-        if cls.enabled[irq_num] and cls.active[irq_num]:
-            log.info("Triggering Interrupt: %i" % (irq_num))
-            peripheral_server.irq_set_qmp(irq_num)
-
-    @classmethod
-    def _trigger_interrupt_bp(cls, irq_num):
-        '''n
-            This should be used if need to trigger an interrupt inside a 
-            bp_handler.  Not sure this even makes sense to do.
-        '''
-        if cls.enabled[irq_num] and cls.active[irq_num]:
-            log.info("Triggering Interrupt: %i" % irq_num)
-            peripheral_server.irq_set_bp(irq_num)
 
     @classmethod
     def enable_bp(cls, irq_num):
-        cls.enabled[irq_num] = True
-        cls._trigger_interrupt_bp(irq_num)
+        """
+        Enables an interrupt so it can be triggered
+        Safe for use from BP Handler context
+        """
+        peripheral_server.irq_enable_bp(irq_num)
 
     @classmethod
     def enable_qmp(cls, irq_num):
-        cls.enabled[irq_num] = True
-        cls._trigger_interrupt_qmp(irq_num)
+        """
+        Enables an interrupt using QMP interface
+        DO NOT use from BP Handler context
+        """
+        peripheral_server.irq_enable_qmp(irq_num)
 
     @classmethod
     def disable_bp(cls, irq_num):
-        cls.enabled[irq_num] = False
-        peripheral_server.irq_clear_bp(irq_num) #just want to disable it
+        """
+        Disables an interrupt so it can be triggered
+        Safe for use from BP Handler context
+        """
+        peripheral_server.irq_disable_bp(irq_num)
 
     @classmethod
     def disable_qmp(cls, irq_num):
-        cls.enabled[irq_num] = False
-        peripheral_server.irq_clear_qmp(irq_num)
+        """
+        Disables an interrupt using QMP interface
+        DO NOT use from BP Handler context
+        """
+        peripheral_server.irq_disable_qmp(irq_num)

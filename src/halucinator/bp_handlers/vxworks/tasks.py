@@ -1,5 +1,5 @@
-# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, 
+# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS,
 # the U.S. Government retains certain rights in this software.
 
 '''tasks module'''
@@ -10,11 +10,19 @@ from halucinator.bp_handlers.bp_handler import BPHandler, bp_handler
 
 log = logging.getLogger(__name__)
 
+class BColors:
+    '''For pretty coloring of messages'''
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
 
 class Tasks(BPHandler):
     '''
         Tasks
-        This class can intercept common task methods and log their 
+        This class can intercept common task methods and log their
         calling to a file.  Commonly used to get a list of tasks
         created
     '''
@@ -31,7 +39,7 @@ class Tasks(BPHandler):
             outfile_name = os.path.join(qemu.avatar.output_directory, self.task_spawn_file)
             with open(outfile_name, 'w') as outfile:
                 outfile.write("Name, Priority, Options, stackSize, entryAddr, ")
-                outfile.write("entryName, callee_addr, callee_name")
+                outfile.write("entryName, callee_addr, callee_name,")
                 args_str = ",".join(['arg %i' %i for i in range(10)])
                 outfile.write(args_str)
                 outfile.write('\n')
@@ -85,3 +93,45 @@ class Tasks(BPHandler):
             outfile.write(",".join(params))
             outfile.write("\n")
         return False, None
+
+# Library Calls
+    # taskResume
+    # taskActivate (just calls taskResume)
+    # taskTcb
+    # taskLock
+    # taskUnlock
+
+# Called from Library Calls:
+    # taskRegsInit
+    # taskArgsSet
+    # taskHookInit
+    # taskDeleteHookAdd
+    # taskCreateLibInit
+    # taskLibInit
+    # taskStackAllot
+    # taskInitialize
+    # taskInitExcStk
+    # taskOpenInit
+
+
+# taskActivate( )
+#     NAME
+#     taskActivate( ) - activate a task that has been initialized
+
+#     SYNOPSIS
+#     STATUS taskActivate
+#         (
+#         int tid /* task ID of task to activate */
+#         )
+#     DESCRIPTION
+#     This routine activates tasks created by taskInit( ). Without activation, a task is ineligible for CPU allocation by the scheduler.
+
+#     The tid (task ID) argument is simply the address of the WIND_TCB for the task (the taskInit( ) pTcb argument), cast to an integer:
+
+#     tid = (int) pTcb;
+#     The taskSpawn( ) routine is built from taskActivate( ) and taskInit( ). Tasks created by taskSpawn( ) do not require explicit task activation.
+#     RETURNS
+#     OK, or ERROR if the task cannot be activated.
+
+
+

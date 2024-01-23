@@ -1,10 +1,12 @@
-# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, 
+# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS,
 # the U.S. Government retains certain rights in this software.
 
 '''bp_handlers for the dos filesystem'''
+'''bp_handlers for the dos filesystem'''
 import logging
 import types
+import re
 
 from halucinator.bp_handlers.vxworks.ios_dev import IosDev
 from halucinator.peripheral_models.dos_fs_model import DosFsModel
@@ -19,7 +21,7 @@ class DosFsLib(BPHandler):
         Usage:
            - class: halucinator.bp_handlers.vxworks.dos_fs.DosFsLib
              class_args: (optional) {dd_dirent_offset: Offset to dir entry in structure)
-             function: 
+             function:
              symbol: <BOARD_SPECIFIC> or
              addr:
     '''
@@ -43,7 +45,6 @@ class DosFsLib(BPHandler):
         # **BINARY DEPENDANT**
         # time_struct = actime
         # time_struct + 4 = modtime
-        
         log.debug("fio_time_set")
         atime = int.from_bytes(qemu.read_memory(time_struct , 1, 4,raw=True) , "little")
         modtime = int.from_bytes(qemu.read_memory(time_struct + 4, 1, 4, raw=True) , "little")
@@ -53,10 +54,10 @@ class DosFsLib(BPHandler):
     def fio_attrib_set(self, qemu, bp_addr,fd,st_attrib):
         '''
             0x01   read-only
-            0x02   hidden  
-            0x04   system file 
-            0x08   volume label  
-            0x10   sub-directory 
+            0x02   hidden
+            0x04   system file
+            0x08   volume label
+            0x10   sub-directory
             0x20   archive file
         '''
 
@@ -164,7 +165,7 @@ class DosFsLib(BPHandler):
             delete break point handler
         '''
         log.debug("#######################")
-        log.debug("delete")
+        log.debug("dosfs delete")
         log.debug("#######################")
         drv = qemu.get_arg(0)
         path = qemu.read_string(qemu.get_arg(1))
@@ -177,7 +178,7 @@ class DosFsLib(BPHandler):
             create break point handler
         '''
         log.debug("#######################")
-        log.debug("create ")
+        log.debug("dosfs create ")
         log.debug("#######################")
         drv = qemu.get_arg(0)
         drive = IosDev.get_driver(drv)
@@ -202,9 +203,9 @@ class DosFsLib(BPHandler):
         #     0x0001 Write only
         #     0x0002 Read/Write
         #     0x0200 Create
-        
+
         log.debug("#######################")
-        log.debug("open ")
+        log.debug("dosfs open ")
         log.debug("#######################")
         drv = qemu.get_arg(0)
         drive = IosDev.get_driver(drv)
@@ -212,6 +213,7 @@ class DosFsLib(BPHandler):
         name = drive + name
         flags = qemu.get_arg(2)
         mode = qemu.get_arg(3)
+        log.debug("drv: %s, drive: %s, name: %s, flags: %s, mode: %s\n", drv, drive, name, flags, mode)
         return self.model.creat_or_open(name,flags,mode)
 
     @bp_handler(['close'])
@@ -221,7 +223,7 @@ class DosFsLib(BPHandler):
         '''
         fd = qemu.get_arg(0)
         log.debug("#######################")
-        log.debug(" close")
+        log.debug("dosfs close")
         log.debug("#######################")
         log.debug("\tFD: %d" % fd)
         try:
@@ -239,7 +241,7 @@ class DosFsLib(BPHandler):
             read break point handler
         '''
         log.debug("#######################")
-        log.debug("read ")
+        log.debug("dosfs read ")
         log.debug("#######################")
         log.debug("\tFD: %d" % qemu.get_arg(0))
         fd = qemu.get_arg(0)
@@ -248,8 +250,7 @@ class DosFsLib(BPHandler):
         data = self.model.read(fd, size)
         log.debug(data[:256])
         if len(data):
-            for i, dat in enumerate(data):
-                qemu.write_memory(buf_ptr + i, 1, dat)
+            qemu.write_memory(buf_ptr, 1, data, len(data),raw=True)
         return True, len(data)
 
     @bp_handler(['write'])
@@ -258,7 +259,7 @@ class DosFsLib(BPHandler):
             write break point handler
         '''
         log.debug("#######################")
-        log.debug("write ")
+        log.debug("dosfs write ")
         log.debug("#######################")
         fd = qemu.get_arg(0)
         buf_ptr = qemu.get_arg(1)
@@ -267,13 +268,73 @@ class DosFsLib(BPHandler):
         self.model.write(fd, buf)
         return True, len(buf)
 
+    @bp_handler(['fprintf'])
+    def fprintf(self, qemu, bp_addr):
+        '''int fprintf(FILE *stream, const char *format, ...)
+        handles most formats, but we don't do anything special
+        for length or for the n. The n should never have been created
+        '''
+        log.debug("#######################")
+        log.debug("dosfs fprintf ")
+        log.debug("#######################")
+        fd = qemu.get_arg(0)
+        fmt = qemu.read_string(qemu.get_arg(1))
+
+        formats = [] #We aren't handling anything fancy or even length args
+        strsplit = re.split('(\W)', fmt)
+        for i, element in enumerate(strsplit):
+            if element == "%" and len(strsplit) > i + 1:
+                if i >= 1 and strsplit[i - 1] != "\\":
+                    formats.append(strsplit[i+1])
+        printf_args = []
+        for i, form in enumerate(formats):
+            arg_int = i + 2
+            value = qemu.get_arg(arg_int)
+            if "i" in form or "d" in form or "u" in form: #int
+                value = int(value)
+            elif "f" in form or "F" in form: # double in normal form
+                value = float(value)
+            elif "x" in form or "X" in form: # hexidecimal
+                value = int(value)
+            elif "s" in form: #null terminated string
+                value = qemu.read_string(value)
+            elif "c" in form: #character
+                value = qemu.read_string(value)[0]
+            elif "e" in form or "E" in form: # double in standard form
+                value = float(value)
+            elif "g" in form or "G" in form: # double in normal or exponential form
+                value = float(value)
+            elif "o" in form: #unsigned int in octal
+                value = int(value)
+            elif "a" in form or "A" in form: # double in dex notation
+                value = float(value)
+            # elif "p" in form: #void pointer
+            #     print("Void pointer")
+            # # elif "n" in form:
+            # # print nothing but writes the number of characters written so far into integer pointer parameter
+            else:
+                print("Unhandled format")
+                print("format: %s\n" % fmt)
+                return True, 1
+            printf_args.append(value)
+
+        print_string = fmt % tuple(printf_args)
+        print("%s" % print_string, end = '')
+        encoded_string = print_string.encode()
+        byte_array = bytearray(encoded_string)
+        self.model.write(fd, byte_array)
+        log.info('%s', byte_array)
+        return True, len(print_string)
+
+
+
     @bp_handler(['ioctl'])
     def ioctl(self, qemu, bp_addr):
         '''
             ioctl bp_handler
         '''
         log.debug("#######################")
-        log.debug("ioctl")
+        log.debug("dosfs ioctl")
         log.debug("#######################")
         fd = qemu.get_arg(0)
         func = qemu.get_arg(1)
@@ -283,43 +344,88 @@ class DosFsLib(BPHandler):
             if isinstance(self.switcher[func], types.FunctionType):
                 #return True,self.switcher[func](self,qemu, bp_addr)
                 return self.switcher[func](self,qemu, bp_addr,fd,arg)
-            log.debug("Unimplemented Fucntion: %s"%self.switcher[func])
+            log.debug("Unimplemented Function, ioctl # %i : %s", func, self.switcher[func])
+            log.debug("fd: %d, func: %d, arg: %#x :", fd, func, arg)
             log.debug(qemu.read_memory(arg, 1, 4))
             return False, None
         log.debug("Undefined Function %s", func)
         input("Press Enter to continue")
         return True, 0
 
+    # Taken from https://github.com/WangDongfang/DfewOS/blob/master/ios/lib/ioLib.h
     switcher = {
-        1:fio_read,
-        2:"FIOFLUSH",
-        5:"FIODISKFORMAT",
-        6:"FIODISKINIT",
-        7:fio_seek,
-        8: fio_where,
-        10 : "fio_rename",
-        11:"FIODISKCHANGE",
-        18:"FIOGETNAME",
-        21:"FIOSYNC",
-        30:"FIONFREE",
-        31:"FIOMKDIR" ,
-        32:"FIORMDIR" ,
-        33:"FIOLABELGET" ,
-        34:"FIOLABELSET",
-        35: "fio_attrib_set" ,
-        36:"FIOCONTIG" ,
-        38:fio_fstat_get,
-        37:fio_read_dir ,
-        39:"FIOUNMOUNT" ,
-        41:"FIONCONTIG",
-        42:"FIOTRUNC" ,
-        44: fio_time_set,
-        47:"fio_move" ,
-        49:"FIOCONTIG64" ,
-        50:"FIONCONTIG64",
-        51:"FIONFREE64",
-        52:"FIONREAD64" ,
-        53:"FIOSEEK64" ,
-        54:"FIOWHERE64" ,
-        55: "FIOTRUNC64" ,
-        }
+    # /* ioctl function codes */
+        1: fio_read, #0x1 #FIONREAD /* get num chars available to read */
+        2: "FIOFLUSH", #0x2 # /* flush any chars in buffers */
+        3: "FIOOPTIONS", #0x3 #/* set options (FIOSETOPTIONS) */
+        4: "FIOBAUDRATE", #0x4 /* set serial baud rate */
+        5: "FIODISKFORMAT", #0x5 /* format disk */
+        6: "FIODISKINIT", #0x6 # /* initialize disk directory */
+        7: fio_seek, #0x7 #FIOSEEK /* set current file char position */
+        8: fio_where, #0x8 #FIOWHERE /* get current file char position */
+        9: "FIODIRENTRY", #0x9 /* return a directory entry (obsolete)*/
+        10: "FIORENAME", #0xa # /* rename a directory entry */
+        11: "FIOREADYCHANGE", #0xb /* return TRUE if there has been a media change on the device */
+        12: "UNKNOWN", #0xc /* get num chars still to be written */
+        13: "FIODISKCHANGE", #0xd /* set a media change on the device */
+        14: "FIOCANCEL", #0xe /* cancel read or write on the device */
+        15: "FIOSQUEEZE", #0xf # /* OBSOLETED since RT11 is obsoleted */
+        16: "FIONBIO", #0x10 /* set non-blocking I/O; SOCKETS ONLY!*/
+        17: "FIONMSGS", #0x11 /* return num msgs in pipe */
+        18: "FIOGETNAME", #0x12 /* return file name in arg */
+        19: "FIOGETOPTIONS", #0x13 /* get options */
+        20: "FIOISATTY", #0x14 /* is a tty */
+        21: "FIOSYNC", #0x15 #/* sync to disk */
+        22: "FIOPROTOHOOK", #0x16 /* specify protocol hook routine */
+        23: "FIOPROTOARG", #0x17 /* specify protocol argument */
+        24: "FIORBUFSET", #0x18 /* alter the size of read buffer  */
+        25: "FIOWBUFSET", #0x19 /* alter the size of write buffer */
+        26: "FIORFLUSH", #0x1a /* flush any chars in read buffers */
+        27: "FIOWFLUSH", #0x1b /* flush any chars in write buffers */
+        28: "FIOSELECT", #0x1c /* wake up process in select on I/O */
+        29: "FIOUNSELECT", #0x1d /* wake up process in select on I/O */
+        30: "FIONFREE", #0x1e # /* get free byte count on device */
+        31: "FIOMKDIR", #0x1f # /* create a directory */
+        32: "FIORMDIR", #0x20 # /* remove a directory */
+        33: "FIOLABELGET", #0x21 # /* get volume label */
+        34: "FIOLABELSET", #0x22 # /* set volume label */
+        35: "FIOATTRIBSET", #0x23 #/* set file attribute */
+        36: "FIOCONTIG", #0x24 #/* allocate contiguous space */
+        37: fio_read_dir, #0x25 #FIOREADDIR /* read a directory entry (POSIX) */
+        38: fio_fstat_get, #0x26 #FIOFSTATGET /* get file status info - legacy */
+        39: "FIOUNMOUNT", #0x27 # /* unmount disk volume */
+        40: "FIOSCSICOMMAND", #0x28 /* issue a SCSI command */
+        41: "FIONCONTIG", #0x29 # /* get size of max contig area on dev */
+        42: "FIOTRUNC", #0x2a # /* truncate file to specified length */
+        43: "FIOGETFL", #0x2b # /* get file mode, like fcntl(F_GETFL) */
+        44: fio_time_set, #0x2c #FIOTIMESET /* change times on a file for utime() */
+        45: "FIOINODETONAME", #0x2d # /* given inode number, return filename*/
+        46: "FIOFSTATFSGET", #0x2e # /* get file system status info */
+        47: "fio_move", #0x2f #FIOMOVE /* move file, ala mv, (mv not rename) */
+    #/* 64-bit ioctl codes, "long long *" expected as 3rd argument */
+        48: "UNKNOWN", #0x30
+        49: "FIOCONTIG64", #0x31 #
+        50: "FIONCONTIG64", #0x32 #
+        51: "FIONFREE64", #0x33 #
+        52: "FIONREAD64", #0x34 #
+        53: "FIOSEEK64", #0x35 #
+        54: "FIOWHERE64", #0x36 #
+        55: "FIOTRUNC64", #0x37 #
+        56: "FIOCOMMITFS", #0x38
+        57: "FIODATASYNC", #0x39 /* sync to I/O data integrity */
+        58: "FIOLINK", #0x3a /* create a link */
+        59: "FIOUNLINK", #0x3b /* remove a link */
+        60: "FIOACCESS", #0x3c /* support POSIX access() */
+        61: "FIOPATHCONF", #0x3d /* support POSIX pathconf() */
+        62: "FIOFCNTL", #0x3e /* support POSIX fcntl() */
+        63: "FIOCHMOD", #0x3f /* support POSIX chmod() */
+        64: fio_fstat_get, #"FIOFSTATGET", #0x40 /* get stat info - POSIX  */
+        65: "FIOUPDATE", #0x41 /* update dosfs default create option */
+    # /* These are for HRFS but can be used for other future file systems */
+        66: "FIOCOMMITPOLICYGETFS", #0x42 /* get the file system commit policy */
+        67: "FIOCOMMITPOLICYSETFS", #0x43 /* set the file system commit policy */
+        68: "FIOCOMMITPERIODGETFS", #0x44 /* get the file system's periodic  commit interval in milliseconds */
+        69: "FIOCOMMITPERIODSETFS", #0x45 /* set the file system's periodic  */
+        70: "FIOFSTATFSGET64", #0x46 /* get file system status info commit interval in milliseconds */
+    }
+

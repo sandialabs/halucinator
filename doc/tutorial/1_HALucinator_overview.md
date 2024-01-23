@@ -19,14 +19,14 @@ effect like setting clock sources, clock divisors, indicating data is available,
 providing the data, writing data, etc.  If we want to emulate the UART we have
 to understand what every bit of these registers does, implement it and the
 state machine that connects them.  Considering the huge numbers of different
-micro-controllers and that most have different implementations of their UARTs, 
-emulating at scale becomes a daunting problem.  
+micro-controllers and that most have different implementations of their UARTs,
+emulating at scale becomes a daunting problem.
 
 This is a challenge for developers, as well, so manufactures provide, and/or developers
-write Hardware Abstraction Libraries (HAL)'s to simplify the emulation process.
+write Hardware Abstraction Libraries (HAL)'s to simplify the development process.
 You can think of these HAL's as the driver functions for bare-metal systems.
 HAL's provide functions like `HAL_UART_Transmit` which performs all interactions
-needed with UART registers to send data.  Using HLE instead of implementing the
+needed with required UART registers to send data.  Using HLE instead of implementing the
 UART to transmit data, we simply intercept the execution of the `HAL_UART_Transmit`
 function, read out the data and then return from the function without executing
 it. We then manage and correct any state to make it appear the function executed
@@ -46,7 +46,7 @@ Given this overview of HLE, let's take a look at the internals of HALucinator.
 HALucinator takes a configuration file that sets up the re-hosting of the firmware.
 The configuration file specifies:
 
-* The architecture the emulator should use (Currently only ARM Cortex-m0/m3 and ARMv5)
+* The architecture the emulator should use
 * The entry point to start executing
 * The firmware and where it should be located in the emulator
 * The memory layout to be used by the emulator

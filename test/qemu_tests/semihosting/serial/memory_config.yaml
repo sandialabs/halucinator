@@ -1,0 +1,18 @@
+---
+memories:
+  data: {base_addr: 0x00000000,  # file: main.elf.bin,
+         permissions: rwx, size: 0x20000000}  # should be big enough
+  halucinator: {base_addr: 0x20000000, size: 0x10000}
+
+  irq_controller: {base_addr: 0xFF00_0000, size: 0x1000,
+                   qemu_name: "halucinator-irq",
+                   properties: [{name: num_irqs, type: int32, value: 64}],
+                   irq: [{dev: "cpu", "irq_num": 0}]}
+  uty0: {base_addr: 0xFFFF2000, size: 0x1000,
+         qemu_name: "virtio-mmio", properties: [{name: force-legacy, type: bool, value: 0}],
+         irq: [{dev: irq_controller, irq_name: IRQ, irq_num: 0x2}]}
+# eth0: {base_addr: 0xFFFF0000, size: 0x1000,
+#        qemu_name: "virtio-mmio", properties: [{name: force-legacy, type: bool, value: 0}],
+#             irq: [{dev: irq_controller, irq_name: IRQ, irq_num: 0x3}]}
+
+machine: {arch: 'arm', cpu_model: 'arm926', gdb_exe: 'arm-none-eabi-gdb', entry_addr: 0x00000000}

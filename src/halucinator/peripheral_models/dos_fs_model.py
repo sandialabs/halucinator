@@ -5,12 +5,13 @@
 
 import logging
 import os
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
 
 def translate_flags( flags):
-    '''VxWorks defines their own flag values, 
+    '''VxWorks defines their own flag values,
     so we need to translate them to POSIX'''
     bit_flags = {0x0001: os.O_WRONLY, 0x0002: os.O_RDWR, 0x0200: os.O_CREAT}
     new_flags = 0x00
@@ -78,9 +79,12 @@ class DosFsModel(object):
         '''
         if (len(name) > 1) and name.strip():
             fn = os.path.abspath(cls.localDir + name)
+            parent_path = fn.rsplit('/', 1)[0]
+            Path(parent_path).mkdir(parents=True, exist_ok=True)
             d = os.path.dirname(fn)
             if os.path.exists(d):
                 fl = translate_flags(flags)
+                log.debug("vxworks flags: %s, translated flags: %s", flags, fl)
                 if is_mkdir(mode):
                     if os.path.exists(fn):
                         fd = os.open(fn, os.O_RDONLY)
@@ -168,7 +172,7 @@ class DosFsModel(object):
                 return None
             ret_val = cls.readdir[fd][0]
             cls.readdir[fd].remove(ret_val)
-            ret_val = ret_val.encode('utf-8') 
+            ret_val = ret_val.encode('utf-8')
             return ret_val
 
         if len(cls.readdir[fd])>0:

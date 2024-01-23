@@ -2,15 +2,14 @@
 # Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
 # certain rights in this software.
 
-from . import peripheral_server
-from collections import deque, defaultdict
-from .interrupts import Interrupts
-from threading import Thread, Event
 import logging
 import time
+from threading import Event, Thread
+
+from halucinator.peripheral_models import peripheral_server
+from halucinator.peripheral_models.interrupts import Interrupts
+
 log = logging.getLogger(__name__)
-
-
 
 # Register the pub/sub calls and methods that need mapped
 @peripheral_server.peripheral_model
@@ -18,11 +17,11 @@ class TimerModel(object):
 
     active_timers = {}
     @classmethod
-    def start_timer(cls, name, isr_num, rate):
+    def start_timer(cls, name, isr_num, rate, delay=0):
         log.debug("Starting timer: %s" % name)
         if name not in cls.active_timers:
             stop_event = Event()
-            t = TimerIRQ(stop_event, name, isr_num, rate)
+            t = TimerIRQ(stop_event, name, isr_num, rate, delay)
             cls.active_timers[name] = (stop_event, t)
             t.start()
 
@@ -44,15 +43,20 @@ class TimerModel(object):
 
 
 class TimerIRQ(Thread):
-    def __init__(self, event, irq_name, irq_num, rate):
+    def __init__(self, event, irq_name, irq_num, rate, delay):
         Thread.__init__(self)
         self.stopped = event
         self.name = irq_name
         self.irq_num = irq_num
         self.rate = rate
+        self.delay = delay
 
     def run(self):
+        if self.delay:
+            #delay for self.delay seconds before triggering
+            time.sleep(self.delay)
+            self.delay = 0
         while not self.stopped.wait(self.rate):
-            log.info("Sending IRQ: %s" % self.irq_num)
+            log.info("Sending IRQ: %s" % hex(self.irq_num))
             Interrupts.set_active_qmp(self.irq_num)
             # call a function

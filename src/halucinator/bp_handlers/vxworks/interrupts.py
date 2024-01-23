@@ -1,5 +1,5 @@
-# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, 
+# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS,
 # the U.S. Government retains certain rights in this software.
 
 '''VxWorks interrupt handler to extend HALucinator interrupts'''
@@ -53,15 +53,17 @@ class Interrupts(BPHandler):
         '''connect a C routine to a hardware interrupt'''
         caller = qemu.avatar.config.get_symbol_name(qemu.regs.lr)
         caller = caller if caller is not None else hex(qemu.regs.lr)
-        handler = qemu.avatar.config.get_symbol_name(qemu.get_arg(1))
+        handler_addr = qemu.get_arg(1)
+        handler = qemu.avatar.config.get_symbol_name(handler_addr)
+
         if handler is None:
-            handler = hex(qemu.regs.r1)
+            handler = handler_addr
 
         with open(self.int_connect_log, 'a') as file:
             file.write("\ncaller:%s\tvector:%s\tHandler:%s\tParam:%s"%
-                       (caller,hex(qemu.regs.r0),handler,hex(qemu.regs.r2)))
-        log.debug("\ncaller:%svector:%s\tHandler:%s\tParam:%s",
-                  caller,hex(qemu.regs.r0),handler,hex(qemu.regs.r2))
+                       (caller,hex(qemu.regs.r0),handler,hex(qemu.get_arg(2))))
+        log.debug("\ncaller:%svector:%s\tHandler:%s (%s)\tParam:%s",
+                  caller,hex(qemu.regs.r0),handler,hex(handler_addr),hex(qemu.get_arg(2)))
         return False, None
 
     @bp_handler(['intExit'])

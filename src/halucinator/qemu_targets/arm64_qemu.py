@@ -1,5 +1,5 @@
-# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, 
+# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS,
 # the U.S. Government retains certain rights in this software.
 
 from .arm_qemu import ARMQemuTarget
@@ -68,7 +68,7 @@ class ARM64QemuTarget(ARMQemuTarget):
         self.write_memory(sp, 8,self.read_register('lr'))
         self.write_register('sp', sp)
     def execute_return(self, ret_value):
-        
+
         if ret_value != None:
             # Puts ret value in r0
             self.regs.x0 = ret_value
@@ -79,15 +79,15 @@ class ARM64QemuTarget(ARMQemuTarget):
         '''
             Calls a function in the binary and returning to ret_bp_handler.
             Using this without side effects requires conforming to calling
-            convention (e.g R0-R3 have parameters and are scratch registers 
-            (callee save),if other registers are modified they need to be 
+            convention (e.g R0-R3 have parameters and are scratch registers
+            (callee save),if other registers are modified they need to be
             saved and restored)
 
             :param callee:   Address or name of function to be called
             :param args:     An interable containing the args to called the function
             :param bp_handler_cls:  Instance of class containing next bp_handler
                                     or string for that class
-            :param ret_bp_handler:  String of used in @bp_handler to identify 
+            :param ret_bp_handler:  String of used in @bp_handler to identify
                                     method to use for return bp_handler
         '''
 
@@ -159,3 +159,13 @@ class ARM64QemuTarget(ARMQemuTarget):
         self.regs.pc = mem.base_addr
         return False, None
 
+
+    def write_branch(self, addr, branch_target, options=None):
+        '''
+            Places an absolute branch at address addr to
+            branch_target
+
+            :param addr(int): Address to write the branch code to
+            :param branch_target: Address to branch too
+        '''
+        raise NotImplemented("Write branch not implemented")

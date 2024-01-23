@@ -1,0 +1,1 @@
+{"cpu_model": "arm926", "memory_mapping": [{"is_special": false, "is_symbolic": false, "forwarded": false, "permissions": "rwx", "name": "data", "size": 536870912, "address": 0}, {"is_special": false, "is_symbolic": false, "forwarded": false, "permissions": "rwx", "name": "halucinator", "size": 65536, "address": 536870912}], "entry_address": 288}

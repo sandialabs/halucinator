@@ -8,7 +8,7 @@ existing `HAL_UART_Receive_IT` handler with a different handler to indicate it
 failed. The first step will be to
 identify the function calls and their parameters needed to capture the LED state.
 
-To do this we are going to use Ghidra to look at the binary of the firmware.  
+To do this we are going to use Ghidra to look at the binary of the firmware.
 Then we will implement breakpoint handlers to capture writing to the LED's. After
 testing those, we will add a peripheral model and external device to enable sending
 and receiving the LED status and UART data on the Peripheral Server.
@@ -26,10 +26,10 @@ Note:  Even though we are using the binary instead of source we are still cheati
 likely a lot, because we have symbols and data types in the firmware.  If we
 were analyzing another firmware we probably would not have this
 information and LibMatch and/or intensive RE would be needed. However, even in cases
-when I have source, I often use Ghidra to look at the firmware when implementing
+when Ghidra is often still useful to look at the firmware when implementing
 things in HALucinator.  Build systems and compilers can do some 'magical'
 transformations to source code making it hard to understand what actually ends
-up in the firmware.  As halucinator runs the firmware it is what's in it that matters.
+up in the firmware.  As HALucinator runs the firmware it is what's in it that matters.
 So gaining some degree of comfort looking at binaries/firmware in Ghidra will be
 worth your time.
 
@@ -85,8 +85,8 @@ Click yes to the Analyze prompt
 Leave the defaults checked and click Analyze
 ```
 
-Ghidra will now use information from the metadata in the ELF file and its own 
-analyses to help you understand the binary. When it completes click on the 
+Ghidra will now use information from the metadata in the ELF file and its own
+analyses to help you understand the binary. When it completes click on the
 disassembly (middle window) and press `G` (for goto), and type `main` then enter.
 
 ![Ghidra Goto Main](imgs/ghidra_goto_main.png)
@@ -101,7 +101,7 @@ functions, in a production firmware this layer would likely be inlined by the co
 and we would have to go lower to the `HAL_GPIO_Init`, and `HAL_GPIO_WritePin` functions.
 Double click on the `BSP_LED_Init` function to go to its code.
 
-To intercept `BSP_LED_Init` we are going use halucinator to intercept on the
+To intercept `BSP_LED_Init` we are going use HALucinator to intercept on the
 first instruction of `BSP_LED_Init` (0x080022cc).  We then will need to know
 what values map to which LED.  Fortunately the symbols in the file make this
 easy.  Hover over the `Led_TypeDef` in the `BSP_LED_Init` function signature
@@ -137,7 +137,7 @@ They all take a type `Led_TypeDef` which has the following mapping.
 
 ### Setup
 
-Copy the tutorial folder in the halucinator repo into a new directory 
+Copy the tutorial folder in the halucinator repo into a new directory
 `halucinator_tutorial` in your home directory.  This keeps the halucinator
 repo's tutorial in a clean state.
 
@@ -147,9 +147,9 @@ cp -r ~/halucinator/tutorial ~/halucinator_tutorial
 cd ~/halucinator_tutorial
 
 ```
-  
-We are going to build our extensions as their own python module. The required 
-`setup.py` has been created for you. You just need to install this it using the 
+
+We are going to build our extensions as their own python module. The required
+`setup.py` has been created for you. You just need to install this it using the
 below commands.
 
 ```bash
@@ -159,14 +159,14 @@ pip install -e .
 
 Notes:
 
-* The `-e` option tells pip to leave the module package here and any change you 
+* The `-e` option tells pip to leave the module package here and any change you
 make to the python code will be reflected in your execution without reinstalling
 the package.
 * However, if you add a new entry point in `setup.py` you will have to re-run `pip install`
-* You don't have to create your own module, but can develop directly in the 
-halucinator repo under the appropriate src/halucinator/(bp_handlers, 
+* You don't have to create your own module, but can develop directly in the
+HALucinator repo under the appropriate src/halucinator/(bp_handlers,
 external_devices, and peripheral_modules directory).  If you develop components
-that would be of use to the wider community pull requests are welcome, and 
+that would be of use to the wider community pull requests are welcome, and
 building them inside the halucinator directories is preferred.
 
 Now we are ready to start implementing. Open up your favorite editor
@@ -188,12 +188,12 @@ Each of these files has steps that need completed that can be found by searching
 for STEP in the file.
 
 ### Setup Config File and Run
-    
+
 Everything you need to run the tutorial has been stubbed out for you.
 Let's start by completing the intercept description
 so we can run the example using the stubs.
 
-Open `my_config.yaml` and complete the Steps. 
+Open `my_config.yaml` and complete the Steps.
 This has two steps:
 1. Adding a map to the LEDHandler constructor so we get nice
 names for our LED's instead of numbers. Note: the `class_args` value enables us
@@ -201,7 +201,7 @@ pass parameters to the class constructor.  However, to ensure it gets processed
 it needs to be used on every intercept.
 2. Adding the intercept for the BSP_LED_On function
 
-Now lets run with our new config, we are going to use the same config files as 
+Now lets run with our new config, we are going to use the same config files as
 last time, and just add our new config file to the end.  This makes it take
 precedence over any prior described intercepts.
 
@@ -219,10 +219,10 @@ OUTPUT
 ```
 ```bash
 halucinator.main|INFO|  Letting QEMU Run
-HAL_LOG|INFO|  ReturnZero: HAL_Init 
-HAL_LOG|INFO|  ReturnZero: HAL_RCC_OscConfig 
-HAL_LOG|INFO|  ReturnZero: HAL_PWREx_EnableOverDrive 
-HAL_LOG|INFO|  ReturnZero: HAL_RCC_ClockConfig 
+HAL_LOG|INFO|  ReturnZero: HAL_Init
+HAL_LOG|INFO|  ReturnZero: HAL_RCC_OscConfig
+HAL_LOG|INFO|  ReturnZero: HAL_PWREx_EnableOverDrive
+HAL_LOG|INFO|  ReturnZero: HAL_RCC_ClockConfig
 hal_tutorial.bp_handlers.led_bp_handler|INFO|  Init Called
 hal_tutorial.bp_handlers.led_bp_handler|INFO|  Init Called
 hal_tutorial.bp_handlers.led_bp_handler|INFO|  Init Called
@@ -235,15 +235,15 @@ RUN
 ctrl-c  # To stop halucinator
 ```
 
-You should get something like the above notice the three calls to 
+You should get something like the above notice the three calls to
 `hal_tutorial.bp_handlers.led_bp_handler|INFO|  Init Called` and the one to
 `hal_tutorial.bp_handlers.led_bp_handler|INFO|  LED On Called` this means
-our new break point handlers are getting executed.  Let's extend them to 
+our new break point handlers are getting executed.  Let's extend them to
 make them useful.
 
 ### LED BP Handler Class
 
-The BP handler has been stubbed out for you in `hal_tutorial/bp_handlers/led_bp_handlers.py`.  
+The BP handler has been stubbed out for you in `hal_tutorial/bp_handlers/led_bp_handlers.py`.
 Complete the steps to extract LED Id and pass it to the model. Then run it
 again.
 
@@ -258,10 +258,10 @@ halucinator -c ~/halucinator/test/STM32/example/Uart_Hyperterminal_IT_O0_memory.
 OUTPUT
 ```bash
 halucinator.main|INFO|  Letting QEMU Run
-HAL_LOG|INFO|  ReturnZero: HAL_Init 
-HAL_LOG|INFO|  ReturnZero: HAL_RCC_OscConfig 
-HAL_LOG|INFO|  ReturnZero: HAL_PWREx_EnableOverDrive 
-HAL_LOG|INFO|  ReturnZero: HAL_RCC_ClockConfig 
+HAL_LOG|INFO|  ReturnZero: HAL_Init
+HAL_LOG|INFO|  ReturnZero: HAL_RCC_OscConfig
+HAL_LOG|INFO|  ReturnZero: HAL_PWREx_EnableOverDrive
+HAL_LOG|INFO|  ReturnZero: HAL_RCC_ClockConfig
 hal_tutorial.bp_handlers.led_bp_handler|INFO|  Init Called
 hal_tutorial.peripheral_models.led_peripheral|DEBUG|  LED Off GREEN
 hal_tutorial.bp_handlers.led_bp_handler|INFO|  Init Called
@@ -279,17 +279,17 @@ ctrl-c # To stop halucinator
 ```
 
 Notice the new calls to `hal_tutorial.peripheral_models.led_peripheral|DEBUG|`
-showing what LED's got turned off and on. Let now extend the peripheral model 
+showing what LED's got turned off and on. Let now extend the peripheral model
 and external device to sent this info outside halucinator.
 
 ### Peripheral Model
 
-Before implementing the model let's think about the model for an LED.  
+Before implementing the model let's think about the model for an LED.
 It is an output only device, which means halucinator will only publish messages
 about its status.  It has two values `on` and `off`.
 
-A template for the peripheral model is provided in 
-`hal_tutorial/peripheral_models/led_peripheral.py` open it up and there 
+A template for the peripheral model is provided in
+`hal_tutorial/peripheral_models/led_peripheral.py` open it up and there
 are 5 tasks the need completed.  Complete them all and then proceed.
 
 ### External Device
@@ -325,10 +325,10 @@ OUTPUT from terminal running halucinator
 
 ```bash
 halucinator.main|INFO|  Letting QEMU Run
-HAL_LOG|INFO|  ReturnZero: HAL_Init 
-HAL_LOG|INFO|  ReturnZero: HAL_RCC_OscConfig 
-HAL_LOG|INFO|  ReturnZero: HAL_PWREx_EnableOverDrive 
-HAL_LOG|INFO|  ReturnZero: HAL_RCC_ClockConfig 
+HAL_LOG|INFO|  ReturnZero: HAL_Init
+HAL_LOG|INFO|  ReturnZero: HAL_RCC_OscConfig
+HAL_LOG|INFO|  ReturnZero: HAL_PWREx_EnableOverDrive
+HAL_LOG|INFO|  ReturnZero: HAL_RCC_ClockConfig
 hal_tutorial.bp_handlers.led_bp_handler|INFO|  Init Called
 hal_tutorial.peripheral_models.led_peripheral|DEBUG|  LED Off GREEN
 hal_tutorial.peripheral_models.led_peripheral|DEBUG|  LED Status GREEN: False
@@ -350,7 +350,7 @@ ctrl-c # To stop halucinator, leave external device running
 ```
 
 
-Notice the new messages like 
+Notice the new messages like
 `hal_tutorial.peripheral_models.led_peripheral|DEBUG|  LED Status RED: True`.
 
 Now look at the led external device terminal and you should see something like
@@ -369,9 +369,9 @@ LED: RED is Off
 
 ### Adjust the logging output
 
-With everything working on for the LED's we no longer need to see the debug 
-messages.  Halucinator automatically looks for a file called `logging.cfg` in 
-the directory it is run from.  This file has been create for you.  Open this up 
+With everything working on for the LED's we no longer need to see the debug
+messages.  Halucinator automatically looks for a file called `logging.cfg` in
+the directory it is run from.  This file has been create for you.  Open this up
 and adjust the hal_tutorial logger to level INFO.
 
 Then re-run halucinator
@@ -392,6 +392,6 @@ for details about how it works.  The `qualname` of each file will be its module 
 ## Conclusion
 
 This completes the tutorial.  You should now have an understanding of how
-halucinator works and how to implement its major components, BPHandlers, 
-Peripheral Handlers, and External Devices.  We also demoed how to adjust what 
+halucinator works and how to implement its major components, BPHandlers,
+Peripheral Handlers, and External Devices.  We also demoed how to adjust what
 is displayed using the logging.cfg file.

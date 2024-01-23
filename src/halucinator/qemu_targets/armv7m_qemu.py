@@ -21,3 +21,12 @@ class ARMv7mQemuTarget(ARMQemuTarget):
             'avatar-armv7m-enable-irq',
             {'num_irq': interrupt_number, 'num_cpu': cpu_number})
 
+    def write_branch(self, addr, branch_target, options=None):
+        '''
+            Places an absolute branch at address addr to
+            branch_target
+
+            :param addr(int): Address to write the branch code to
+            :param branch_target: Address to branch too
+        '''
+        raise NotImplemented("Write branch not implemented")

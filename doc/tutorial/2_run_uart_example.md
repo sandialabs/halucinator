@@ -8,7 +8,7 @@ messages over a UART and then waits for 10 characters to be sent back over the
 UART.  The binary then echos those characters back, prints another message, and
 enters an infinite loop.  This is the same example as in HALucinator's README and
 is located in `~/halucinator/test/STM32/example`. All commands should be run from
-there unless otherwise specified.  We will use this example firmware throughout 
+there unless otherwise specified.  We will use this example firmware throughout
 this tutorial.
 
 
@@ -47,14 +47,14 @@ int main(void)
     Error_Handler();
   }
 
-  /*##-2- Start the transmission process #####################################*/  
+  /*##-2- Start the transmission process #####################################*/
   if(HAL_UART_Transmit_IT(&UartHandle, (uint8_t*)aTxStartMessage, TXSTARTMESSAGESIZE)!= HAL_OK)
   {
     /* Transfer error in transmission process */
     Error_Handler();
   }
 
-  /*##-3- Put UART peripheral in reception process ###########################*/  
+  /*##-3- Put UART peripheral in reception process ###########################*/
   if(HAL_UART_Receive_IT(&UartHandle, (uint8_t *)aRxBuffer, RXBUFFERSIZE) != HAL_OK)
   {
     /* Transfer error in reception process */
@@ -66,19 +66,19 @@ int main(void)
   {
   }
 
-  /*##-5- Send the received Buffer ###########################################*/  
+  /*##-5- Send the received Buffer ###########################################*/
   if(HAL_UART_Transmit_IT(&UartHandle, (uint8_t*)aRxBuffer, RXBUFFERSIZE)!= HAL_OK)
   {
     /* Transfer error in transmission process */
     Error_Handler();
   }
 
-  /*##-6- Wait for the end of the transfer ###################################*/  
+  /*##-6- Wait for the end of the transfer ###################################*/
   while (HAL_UART_GetState(&UartHandle) != HAL_UART_STATE_READY)
   {
   }
 
-  /*##-7- Send the End Message ###############################################*/  
+  /*##-7- Send the End Message ###############################################*/
   if(HAL_UART_Transmit_IT(&UartHandle, (uint8_t*)aTxEndMessage, TXENDMESSAGESIZE)!= HAL_OK)
   {
     /* Turn LED3 on: Transfer error in transmission process */
@@ -88,12 +88,12 @@ int main(void)
     }
   }
 
-  /*##-8- Wait for the end of the transfer ###################################*/  
+  /*##-8- Wait for the end of the transfer ###################################*/
   while (HAL_UART_GetState(&UartHandle) != HAL_UART_STATE_READY)
   {
   }
 
-  /* Infinite loop */  
+  /* Infinite loop */
   while (1)
   {
   }
@@ -111,7 +111,7 @@ static void Error_Handler(void)
 ```
 
 The most relevant portions of the code to understand `main` are above. You
-will notice is sends `aTxStartMessage`, then reads `RXBUFFERSIZE` characters
+will notice it sends `aTxStartMessage`, then reads `RXBUFFERSIZE` characters
 into aRxBuffer, writes it back out the UART, and then writes `aTxEndMessage`. If
 at any point there is an error, it calls `Error_Handler` and turns on `LED3`.
 
@@ -190,7 +190,7 @@ ctrl-c
 
 Now lets examine some of the outputs created by running HALucinator. HALucinator saves
 a bunch of information in `tmp/HALucinator` that can be examined after execution.
-(Note: the `-n <RUN_NAME>` option to halucinator changes where these files are saved.)
+(Note: the `-n <RUN_NAME>` option to HALucinator changes where these files are saved.)
 
 These files are:
 
@@ -201,15 +201,17 @@ These files are:
 * qemu_asm.log           -- Trace information output by QEMU from the --log_blocks option
 * stats.yaml             -- Statistic information from halucinator, about what intercepts were used how often, when, etc.
 
-If HALucinator fails to run, then examining the `_err.txt` and `_out.tx` can often
+If HALucinator fails to run, then examining the `*_err.txt` and `*_out.tx` can often
 be helpful.  However, of most interest is usually the `qemu_asm.log`. This is a
-text file listing the disassembly of the basic blocks as they executed.  
+text file listing the disassembly of the basic blocks as they executed.
 It can be opened in a text editor, but is often very large. To see the last 100
 lines of the execution trace use tail.
 
 ```bash
 tail -n 100 tmp/HALucinator/qemu_asm.log
 ```
+(As a note the qemu log can be imported in to Ghidra using
+HQ-Tracer https://github.com/halucinator/hq-tracer)
 
 ## Config files
 
@@ -224,7 +226,7 @@ code ~/halucinator/test/STM32/example
 ### Memory configuration
 
 First open up `Uart_Hyperterminal_IT_O0_memory.yaml`.  This specifies the
-memories used in the emulator.  
+memories used in the emulator.
 
 
 ```yaml
@@ -244,8 +246,8 @@ memories specify a file that contains the firmware.  The contents of the file ar
 copied into the memory before execution begins. The file's path is
 relative to the path of config file (i.e., `Uart_Hyperterminal_IT_O0_memory.yaml`).
 In this case, the file is specified twice because the real hardware aliases the
-memory at 0x800000 to address 0. Since the memories are not written to by the
-firmware we can mimic this by putting the firmware in both places.
+memory at 0x800000 to address 0. Since the memories are read only we can mimic
+this by putting the firmware in both places.
 
 You will also note that under peripherals is a `logger`.  It used Avatar2's peripheral
 class to implement a peripheral that handles memory accesses in the range starting
@@ -272,7 +274,7 @@ symbols:
 ```
 
 The first three options are ignored on the cortex-m3 in HALucinator, are
-derived from the firmware, and are present for historical reasons. The `symbols`
+derived from the firmware. The `symbols`
 entry contains a dictionary mapping addresses to function names. They are used
 to resolve the address at which breakpoints are placed.  This file can be obtained
 from an elf file using the HALucinator tool `hal_make_addr`.  This was used to
@@ -284,6 +286,7 @@ hal_make_addr -b Uart_Hyperterminal_IT_O0.elf -o addrs.yaml
 
 The symbols can also be provided by passing in a csv file and passed
 to HALucinator using the `-s` option.  The format is shown below.
+This format can be exported from a Ghidra project using `ghidra_scripts/export_symbol_csv.py`
 
 ```csv
 symbol, start_addr, stop_addr
@@ -326,7 +329,8 @@ Each handler specifies:
             is used to lookup the address where the breakpoint should be set in
             the symbols provided by the address config file.
 
-HALucinator only instantiates each call once, even if multiple intercepts
+
+HALucinator only instantiates each class once, even if multiple intercepts
 specify the same class.  There are also a number of optional fields that can be
 specified on each intercept described in the main HALucinator README.
 

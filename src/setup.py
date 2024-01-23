@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
 
 
@@ -24,9 +24,9 @@ def get_packages(rel_dir):
 
 
 setup(name='halucinator',
-      version='1.1.0',
+      version='1.8.0',
       description='Firmware emulation and rehosting framework',
-      author='Abe Clements and Eric Gustafson',
+      author='HALucinator Team',
       packages=get_packages('halucinator'),
       entry_points ={'console_scripts': [
             'halucinator = halucinator.main:main',
@@ -40,7 +40,7 @@ setup(name='halucinator',
             'hal_dev_802_15_4=halucinator.external_devices.IEEE802_15_4:main',
             'hal_dev_irq_trigger=halucinator.external_devices.trigger_interrupt:main'
         ]},
-      requires=['avatar2',    
+      requires=['avatar2',
                 'zeromq',
                 'PyYAML',
                 'IPython' ])

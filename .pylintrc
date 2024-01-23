@@ -1,0 +1,12 @@
+[MESSAGES CONTROL]
+disable=
+    unspecified-encoding
+
+[IMPORTS]
+ignored-modules=avatar2, IPython
+
+[TYPECHECK]
+generated-members=zmq.*
+
+[FORMAT]
+good-names=fd,pc,i

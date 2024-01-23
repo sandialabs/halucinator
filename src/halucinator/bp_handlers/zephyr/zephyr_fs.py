@@ -1,20 +1,23 @@
-# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC 
-# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS, 
+# Copyright 2021 National Technology & Engineering Solutions of Sandia, LLC
+# (NTESS). Under the terms of Contract DE-NA0003525 with NTESS,
 # the U.S. Government retains certain rights in this software.
 
 # Created by BYU Capstone Team 44 2020-2021
 # Project sponsored by National Technology & Engineering Solutions of Sandia, LLC (NTESS).
 
-import os
-from os import sys, path
-from stat import S_ISDIR
-from ...peripheral_models.host_fs import HostFSModel
-from ..bp_handler import BPHandler, bp_handler
 import logging
+import os
 import struct
+from os import path, sys
+from stat import S_ISDIR
+
+from halucinator.bp_handlers.bp_handler import BPHandler, bp_handler
+from halucinator.peripheral_models.host_fs import HostFSModel
+
 log = logging.getLogger(__name__)
 
 from ... import hal_log
+
 hal_log = hal_log.getHalLogger()
 
 
@@ -22,7 +25,7 @@ class ZephyrFS(BPHandler):
 
     def read_string(self, qemu, addr):
         """Helper function to read strings from QEMU memory
-       
+
         :param qemu: Firmware Emulator
         :type qemu: Avatar QEMU Target
         :param addr: Address to read string from
@@ -40,7 +43,7 @@ class ZephyrFS(BPHandler):
             p_str += 1
 
         return p_data.decode("utf-8")
-        
+
 
     def __init__(self, impl=HostFSModel):
         """Initialization of ZephyrFS class and tx/rx buffers
@@ -53,15 +56,15 @@ class ZephyrFS(BPHandler):
     @bp_handler(['flash_area_stub'])
     def flash_area_stub(self, qemu, bp_addr):
         """Stub handler for flash_area_* functions
-       
+
         :param qemu: Firmware Emulator
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -70,7 +73,7 @@ class ZephyrFS(BPHandler):
 
     @bp_handler(['fs_mount'])
     def fs_mount(self, qemu, bp_addr):
-        """Mounts a virtual storage medium to the host virtual filesystem. 
+        """Mounts a virtual storage medium to the host virtual filesystem.
            All FS calls to that mount point will correspond with the appropriate
            storage directory in `<host working dir>/storage/`.
 
@@ -78,10 +81,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -103,10 +106,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -118,7 +121,7 @@ class ZephyrFS(BPHandler):
         out = struct.pack("<LLLL", stat_info.f_bsize, stat_info.f_frsize, stat_info.f_blocks, stat_info.f_bfree)
         qemu.write_memory(p_out, 1, out, len(out), raw=True)
         log.info(f"fs_statvfs called with arguments: {stat_path}, {stat_info}")
-        return True, 0  
+        return True, 0
 
     @bp_handler(['fs_stat'])
     def fs_stat(self, qemu, bp_addr):
@@ -128,10 +131,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -155,10 +158,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -179,10 +182,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -211,10 +214,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -226,7 +229,7 @@ class ZephyrFS(BPHandler):
         result, data = self.model.read(p_fs, size)
         if len(data) > 0:
             qemu.write_memory(p_dst, 1, data, len(data), raw=True)
-        
+
         log.info(f"fs_read called: {hex(p_dst)}, {size}, {data}")
         return True, result
 
@@ -239,10 +242,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -256,7 +259,7 @@ class ZephyrFS(BPHandler):
 
         log.info("fs_write called")
         return True, amount_written
-    
+
     @bp_handler(['fs_seek'])
     def fs_seek(self, qemu, bp_addr):
         """fs_seek breakpoint handler, seeks a file handle in r0 (if valid) to
@@ -266,10 +269,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -291,10 +294,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -318,10 +321,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -344,10 +347,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -366,10 +369,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -388,10 +391,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -410,10 +413,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -421,7 +424,7 @@ class ZephyrFS(BPHandler):
         d_path = self.read_string(qemu, p_path)
         retval = self.model.mkdir(d_path)
         log.info("fs_mkdir called")
-        return True, retval 
+        return True, retval
 
     @bp_handler(['fs_opendir'])
     def fs_opendir(self, qemu, bp_addr):
@@ -431,10 +434,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -450,9 +453,9 @@ class ZephyrFS(BPHandler):
         d_data = struct.pack("<LL", p_fs, p_mount)
         qemu.write_memory(p_dir, 1, d_data, len(d_data), raw=True)
 
-        
+
         log.info(f"fs_opendir called: {d_path}")
-        return True, retval        
+        return True, retval
 
     @bp_handler(['fs_readdir'])
     def fs_readdir(self, qemu, bp_addr):
@@ -462,10 +465,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -494,10 +497,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """
@@ -508,11 +511,11 @@ class ZephyrFS(BPHandler):
         path_dst = self.read_string(qemu, p_path_dst)
 
         retval = self.model.rename(path_src, path_dst)
-        
+
         log.info(f"fs_rename called: {path_src}, {path_dst}, {retval}")
         return True, retval
 
-    
+
     @bp_handler('fs_truncate')
     def fs_truncate(self, qemu, bp_addr):
         """fs_truncate breakpoint handler, truncates or expands a file handle's file to a
@@ -522,10 +525,10 @@ class ZephyrFS(BPHandler):
         :type qemu: Avatar QEMU Target
         :param bp_addr: Breakpoint handler address
         :type bp_addr: tuple
-        :return: ‘False’ indicates that the firmware should continue execution from 
-            the breakpoint and ignore the return value of this function, ‘True’ 
-            indicates that the firmware should use the Integer return value of this 
-            function instead, Integer return value provides the replacement return 
+        :return: ‘False’ indicates that the firmware should continue execution from
+            the breakpoint and ignore the return value of this function, ‘True’
+            indicates that the firmware should use the Integer return value of this
+            function instead, Integer return value provides the replacement return
             value if Boolean is ‘True’
         :rtype: boolean, int
         """

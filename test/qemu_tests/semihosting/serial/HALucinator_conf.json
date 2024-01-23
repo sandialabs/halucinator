@@ -1,0 +1,87 @@
+{
+    "cpu_model": "arm926",
+    "memory_mapping": [
+        {
+            "is_special": false,
+            "is_symbolic": false,
+            "forwarded": false,
+            "permissions": "rwx",
+            "name": "data",
+            "size": 536870912,
+            "address": 0
+        },
+        {
+            "qemu_properties": [
+                {
+                    "name": "num_irqs",
+                    "type": "int32",
+                    "value": 64
+                }
+            ],
+            "irq": [
+                {
+                    "dev": "cpu",
+                    "irq_num": 0
+                }
+            ],
+            "qemu_name": "halucinator-irq",
+            "is_special": false,
+            "is_symbolic": false,
+            "forwarded": false,
+            "permissions": "rwx",
+            "name": "irq_controller",
+            "size": 4096,
+            "address": 4278190080,
+            "properties": [
+                {
+                    "name": "num_irqs",
+                    "type": "int32",
+                    "value": 64
+                }
+            ],
+            "bus": "sysbus"
+        },
+        {
+            "is_special": false,
+            "is_symbolic": false,
+            "forwarded": false,
+            "permissions": "rwx",
+            "name": "halucinator",
+            "size": 65536,
+            "address": 536870912
+        },
+        {
+            "qemu_properties": [
+                {
+                    "name": "force-legacy",
+                    "type": "bool",
+                    "value": 0
+                }
+            ],
+            "irq": [
+                {
+                    "dev": "irq_controller",
+                    "irq_name": "IRQ",
+                    "irq_num": 2
+                }
+            ],
+            "qemu_name": "virtio-mmio",
+            "is_special": false,
+            "is_symbolic": false,
+            "forwarded": false,
+            "permissions": "rwx",
+            "name": "uty0",
+            "size": 4096,
+            "address": 4294909952,
+            "properties": [
+                {
+                    "name": "force-legacy",
+                    "type": "bool",
+                    "value": 0
+                }
+            ],
+            "bus": "sysbus"
+        }
+    ],
+    "entry_address": 0
+}

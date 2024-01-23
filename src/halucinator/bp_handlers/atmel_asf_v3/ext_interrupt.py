@@ -1,5 +1,5 @@
-# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
 
 from ...peripheral_models.interrupts import Interrupts
@@ -69,7 +69,3 @@ class EXT_Int(BPHandler, AvatarPeripheral):
         log.info("Callback Set %s" % hex(qemu.regs.r0))
         return False, None  # Just let it run,
 
-    # @bp_handler("dummy")
-    # def dummy(self, qemu, bp_addr):
-
-    #     return True, None

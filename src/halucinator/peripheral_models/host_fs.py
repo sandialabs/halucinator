@@ -1,9 +1,9 @@
-# Copyright 2019-2021 National Technology & Engineering Solutions of Sandia, LLC (NTESS). 
-# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains 
+# Copyright 2019-2021 National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+# Under the terms of Contract DE-NA0003525 with NTESS, the U.S. Government retains
 # certain rights in this software.
 
-from .peripheral import requires_tx_map, requires_rx_map, requires_interrupt_map
-from . import peripheral_server
+from halucinator.peripheral_models.peripheral import requires_tx_map, requires_rx_map, requires_interrupt_map
+from halucinator.peripheral_models import peripheral_server
 from collections import defaultdict
 import os
 import io
@@ -29,9 +29,9 @@ class HostFSModel(object):
 
     def __init__(self):
         """Initialization of HostFSModel class
-        """  
+        """
 
-        # Make sure our VFS is clean of any lingering 
+        # Make sure our VFS is clean of any lingering
         # symlinks before beginning
         try:
             shutil.rmtree("vfs")
@@ -77,26 +77,26 @@ class HostFSModel(object):
         if (fs_type in self.mount_points):
             return -EBUSY
         print("mount ", mount_path, fs_type)
-        dir_path = os.path.realpath("storage/"+str(fs_type))
+        dir_path = os.path.realpath("storage/" + str(fs_type))
         #
         try:
             os.makedirs("vfs", exist_ok=True)
         except OSError:
-            pass        
+            pass
 
         try:
-            os.makedirs("storage/"+ str(fs_type), exist_ok=True)
+            os.makedirs("storage/" + str(fs_type), exist_ok=True)
         except OSError:
             pass
 
-        if not self.is_valid_path(self, "vfs"+mount_path):
+        if not self.is_valid_path(self, "vfs" + mount_path):
             return 0
 
         if self.is_valid_mount(self, "vfs" + mount_path):
             return 0
 
         try:
-            os.symlink(dir_path, "vfs"+mount_path, target_is_directory=True)
+            os.symlink(dir_path, "vfs" + mount_path, target_is_directory=True)
         except OSError:
             pass
         self.mount_points[fs_type] = mount_path
@@ -115,10 +115,10 @@ class HostFSModel(object):
                  and on success, a file handle.
         :rtype: int, int
         """
-        if not self.is_valid_path(self, "./vfs"+f_path):
+        if not self.is_valid_path(self, "./vfs" + f_path):
             return (-ENOENT, 0)
 
-        if not self.is_valid_mount(self, "./vfs"+f_path):
+        if not self.is_valid_mount(self, "./vfs" + f_path):
             return (-ENOENT, 0)
 
         # TODO make sure files can't be created in /
@@ -147,7 +147,6 @@ class HostFSModel(object):
         except FileNotFoundError:
             return (-ENOENT, 0)
 
-        
         self.open_files[self.current_fd] = f
         self.current_fd += 1
         return (0, (self.current_fd - 1))
@@ -213,10 +212,10 @@ class HostFSModel(object):
         :return: A tuple of an errcode (0 on success, -ERRNO on errors) and stat results.
         :rtype: int, os.stat_result
         """
-        if not self.is_valid_path(self, "./vfs"+f_path):
+        if not self.is_valid_path(self, "./vfs" + f_path):
             return -ENOENT, None
 
-        if not self.is_valid_mount(self, "./vfs"+f_path):
+        if not self.is_valid_mount(self, "./vfs" + f_path):
             return (-ENOENT, None)
 
         try:
@@ -306,7 +305,7 @@ class HostFSModel(object):
 
         return 0 # self.open_files[f_id].flush()
 
-    @classmethod 
+    @classmethod
     def closedir(self, d_id):
         """Closes a VFS directory handle
 
@@ -317,7 +316,6 @@ class HostFSModel(object):
         """
         if d_id not in self.open_directories:
             return 0
-        
         del self.open_directories[d_id]
         return 0
 
@@ -330,21 +328,21 @@ class HostFSModel(object):
         :return: 0 on success, -ERRNO on errors.
         :rtype: int
         """
-        if not self.is_valid_path(self, "./vfs"+d_path):
+        if not self.is_valid_path(self, "./vfs" + d_path):
             return -ENOENT
 
-        if not self.is_valid_mount(self, "./vfs"+d_path):
+        if not self.is_valid_mount(self, "./vfs" + d_path):
             return (-ENOENT)
 
         # TODO make sure folders can't be created in /
 
         if (path.exists("./vfs" + d_path)):
             return -EEXIST
-        
+
         os.mkdir("./vfs" + d_path)
         return 0
 
-    @classmethod 
+    @classmethod
     def opendir(self, d_path):
         """Opens a VFS directory and returns a directory handle
 
@@ -354,10 +352,10 @@ class HostFSModel(object):
                  on success, a directory handle.
         :rtype: int, int
         """
-        if not self.is_valid_path(self, "./vfs"+d_path):
+        if not self.is_valid_path(self, "./vfs" + d_path):
             return (-ENOENT, 0)
 
-        if not self.is_valid_mount(self, "./vfs"+d_path):
+        if not self.is_valid_mount(self, "./vfs" + d_path):
             return (-ENOENT, 0)
 
         if (not path.exists("./vfs" + d_path)):
@@ -380,7 +378,6 @@ class HostFSModel(object):
         """
         if d_id not in self.open_directories:
             return -EBADF, None, ""
-        
         try:
             d_entry = next(self.open_directories[d_id])
         except StopIteration:
@@ -400,10 +397,10 @@ class HostFSModel(object):
         :return: Returns 0 on success, -ERRNO on errors
         :rtype: int
         """
-        if not self.is_valid_path(self, "./vfs"+f_path):
+        if not self.is_valid_path(self, "./vfs" + f_path):
             return -ENOENT
 
-        if not self.is_valid_mount(self, "./vfs"+f_path):
+        if not self.is_valid_mount(self, "./vfs" + f_path):
             return (-ENOENT)
 
         if (not path.exists("./vfs" + f_path)):
@@ -431,16 +428,16 @@ class HostFSModel(object):
         :return: Returns 0 on success, -ERRNO on errors
         :rtype: int
         """
-        if not self.is_valid_path(self, "./vfs"+src):
+        if not self.is_valid_path(self, "./vfs" + src):
             return -EINVAL
 
-        if not self.is_valid_mount(self, "./vfs"+src):
+        if not self.is_valid_mount(self, "./vfs" + src):
             return (-EINVAL)
 
-        if not self.is_valid_path(self, "./vfs"+dst):
+        if not self.is_valid_path(self, "./vfs" + dst):
             return -EINVAL
 
-        if not self.is_valid_mount(self, "./vfs"+dst):
+        if not self.is_valid_mount(self, "./vfs" + dst):
             return (-EINVAL)
 
         # TODO make sure files can't be created in /
@@ -453,7 +450,6 @@ class HostFSModel(object):
         except OSError:
             return -ENOTBLK
         return 0
-    
     @classmethod
     def truncate(self, f_id, length):
         """Truncates a VFS file handle to a specified length.

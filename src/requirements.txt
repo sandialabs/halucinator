@@ -2,8 +2,12 @@ PyYAML
 zmq
 IPython
 pyelftools
-scapy==2.4.4 
+scapy==2.4.4
 pycparser
 avatar2
 pyserial
 angr
+deprecated
+pylint==2.13.5
+yamllint==1.26.3
+black==22.3.0

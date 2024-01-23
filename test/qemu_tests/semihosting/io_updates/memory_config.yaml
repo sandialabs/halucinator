@@ -1,0 +1,7 @@
+---
+memories:
+  data: {base_addr: 0x00000000,  # file: main.elf.bin,
+         permissions: rwx, size: 0x20000000}  # should be big enough
+  halucinator: {base_addr: 0x20000000, size: 0x10000}
+
+machine: {arch: 'arm', cpu_model: 'arm926', gdb_exe: 'arm-none-eabi-gdb', entry_addr: 0x00000000}

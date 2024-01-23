@@ -1,0 +1,26 @@
+# This is a program that will be injected into the physical memory of the 
+# firmware and the functions in intercepts can be used to replace those in the
+# firmware.
+
+memories:
+  stack: {base_addr: 0x32000, size: 0x4E000}
+  halucinator: {base_addr: 0x40000000, size: 0x10000}
+
+machine: {arch: 'arm', cpu_model: 'arm926', gdb_exe: 'arm-none-eabi-gdb', entry_addr: 0x00008120}
+
+intercepts:
+  - class: halucinator.bp_handlers.generic.newlib_syscalls.NewLibSysCalls
+    function: _write
+    symbol: $program_1$_write
+
+  - class: halucinator.bp_handlers.IPythonShell
+    function: exit
+    symbol: $program_1$exit
+
+elf_program:
+  name:  program_1 #  For user convience
+  build: {cmd: make, dir: c_program, module_relative: null}  # Optional: Command to build program the file
+  elf: main.elf  # Path to the elf file (full path, relative to this config file
+  execute_before: True  # Should the main (and pre main) of this program execute before the firmware's 
+                        # entry point
+  intercepts: []

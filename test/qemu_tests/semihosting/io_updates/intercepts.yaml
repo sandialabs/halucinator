@@ -1,0 +1,22 @@
+---
+intercepts:
+
+  - class: halucinator.bp_handlers.BasicIO
+    function: read_digital
+    symbol: read_digital
+
+  - class: halucinator.bp_handlers.BasicIO
+    function: write_digital
+    symbol: write_digital
+
+  - class: halucinator.bp_handlers.BasicIO
+    function: read_analog
+    symbol: read_analog
+
+  - class: halucinator.bp_handlers.BasicIO
+    function: write_analog
+    symbol: write_analog
+
+  - class: halucinator.bp_handlers.KillExit
+    function: exit
+    symbol: exit

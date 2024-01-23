@@ -1,0 +1,5 @@
+Dockerfile
+.dockerignore
+**/tmp/*
+deps/build-qemu*
+deps/avatar2/.git/

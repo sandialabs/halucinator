@@ -1,0 +1,7 @@
+---
+intercepts:
+
+  # - class: halucinator.bp_handlers.generic.libc.Libc6
+  - class: halucinator.bp_handlers.KillExit
+    function: exit
+    symbol: exit

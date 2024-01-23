@@ -1,0 +1,26 @@
+---
+intercepts:
+
+  - class: halucinator.bp_handlers.generic.heap_tracking.Alloc
+    function: malloc
+    class_args: {use_cookie: true}
+    symbol: 'malloc'
+
+  - class: halucinator.bp_handlers.generic.heap_tracking.Alloc
+    function: free
+    class_args: {use_cookie: true}
+    symbol: 'free'
+
+  - class: halucinator.bp_handlers.generic.heap_tracking.Alloc
+    function: calloc
+    class_args: {use_cookie: true}
+    symbol: 'calloc'
+
+  - class: halucinator.bp_handlers.generic.heap_tracking.Alloc
+    function: realloc
+    class_args: {use_cookie: true}
+    symbol: 'realloc'
+
+  - class: halucinator.bp_handlers.KillExit
+    function: exit
+    symbol: exit
