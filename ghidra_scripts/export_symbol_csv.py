@@ -28,5 +28,5 @@ if __name__ == "__main__":
             )
 
             # pylint: disable=consider-using-f-string
-            outfile.write("%s, 0x%i, 0x%i\n" % (name, startAddr, endAddr))
+            outfile.write("%s, 0x%x, 0x%x\n" % (name, startAddr, endAddr))
             function = getFunctionAfter(function)
